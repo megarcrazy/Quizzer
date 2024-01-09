@@ -1,22 +1,27 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from .config import Config
+from app.models import db
+import app.setup_test_db as setup_test_db
 
 
+# Initiate Flask
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.SQLALCHEMY_DATABASE_URI
-db = SQLAlchemy(app)
+db.init_app(app)
 
-# Setup testing environment for application and database
-if Config.TESTING_ENVIRONMENT:
-    from .setup_test_db import create_db, insert_sample_quizzes
+# Setup testing environment for application and database using sqlite
+with app.app_context():
+    if Config.NEW_ENVIRONMENT:
+        db.drop_all()  # Drop existing tables
 
-    with app.app_context():
-        # Create testing database
-        create_db(db)
+        db.create_all()  # Create SQL tables
 
         # Insert sample values to the database
-        insert_sample_quizzes(db)
+        setup_test_db.insert_sample_quizzes(db)
+    else:
+        # Create SQL tables
+        db.create_all()
+
 
 # Import routes to access the Flask application routes
 from app import routes  # noqa: E402, F401
