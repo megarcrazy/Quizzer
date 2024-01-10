@@ -1,14 +1,16 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+# ORM demonstration
 
-# Regular SQL tables
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 
 class Quiz(db.Model):
+    __tablename__ = 'Quiz'
+
     # Auto-incremented quiz id
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    quiz_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     # Name of the quiz
     name = db.Column(db.String(20), nullable=False)
@@ -20,38 +22,45 @@ class Quiz(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Cascading updated
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Table relationship to quiz question table
-    quiz_questions = db.relationship(
-        'QuizQuestion', backref='quiz_parent', lazy='dynamic',
-        cascade='all, delete-orphan')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class QuizQuestion(db.Model):
+    __tablename__ = 'QuizQuestion'
+
     # Auto-incremented quiz question id
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    question_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     # Foreign key to quiz table
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+    quiz_id = db.Column(
+        db.Integer, db.ForeignKey('Quiz.quiz_id'), nullable=False)
 
     # Text representation of question
     text = db.Column(db.String(100), nullable=False)
 
-    # Table relationship to quiz option table
-    quiz_options = db.relationship(
-        'QuizOption', backref='question_parent', lazy='dynamic',
-        cascade='all, delete-orphan')
-
 
 class QuizOption(db.Model):
+    __tablename__ = 'QuizOption'
+
     # Auto-incremented quiz option id
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    option_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     # Foreign key to quiz question table
     question_id = db.Column(
-        db.Integer, db.ForeignKey('quiz_question.id'), nullable=False)
+        db.Integer, db.ForeignKey('QuizQuestion.question_id'), nullable=False)
 
     # Text represention of quiz option
     text = db.Column(db.String(20), nullable=False)
+
+
+class ViewFullQuiz(db.Model):
+    __tablename__ = 'viewFullQuiz'
+    __table_args__ = {'info': dict(is_view=True)}
+
+    quiz_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    code = db.Column(db.String(8))
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
+    question_text = db.Column(db.String(100))
+    option_text = db.Column(db.String(100))
