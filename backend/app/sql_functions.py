@@ -3,9 +3,10 @@ import logging
 from flask_sqlalchemy.extension import SQLAlchemy
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.engine.cursor import CursorResult
 
 
-def create_new_tables_and_views(db: SQLAlchemy) -> None:
+def create_new_tables(db: SQLAlchemy) -> None:
     """Generate all SQL table views if they do not exist.
 
     Parameters:
@@ -16,17 +17,23 @@ def create_new_tables_and_views(db: SQLAlchemy) -> None:
     _create_quiz_table(db)
     _create_quiz_question_table(db)
     _create_quiz_option_table(db)
-    _create_full_quiz_view(db)
 
 
-def _execute_query(db: SQLAlchemy, query: str) -> None:
-    """Execute query with try catch and commit SQL changes."""
+def _execute_query(
+    db: SQLAlchemy, query: str, commit: bool
+) -> CursorResult | None:
+    """Execute query with try catch and commit SQL changes and option to
+    auto-commit. Returns cursor result or none if failed
+    """
     try:
-        db.session.execute(text(query))
-        db.session.commit()
+        result = db.session.execute(text(query))
+        if commit:
+            db.session.commit()
+        return result
     except SQLAlchemyError as e:
         logging.critical(f"Failed to execute query: {query}")
         logging.debug(e)
+    return None
 
 
 def _drop_existing_tables_and_views(db: SQLAlchemy) -> None:
@@ -35,13 +42,13 @@ def _drop_existing_tables_and_views(db: SQLAlchemy) -> None:
     table_list = ['Quiz', 'QuizQuestion', 'QuizOption']
     for table in table_list:
         query = f'DROP TABLE IF EXISTS {table};'
-        _execute_query(db, query)
+        _execute_query(db, query, True)
 
     # Drop all views
     view_list = ['viewFullQuiz']
     for view in view_list:
         query = f'DROP VIEW IF EXISTS {view};'
-        _execute_query(db, query)
+        _execute_query(db, query, True)
 
 
 def _create_quiz_table(db: SQLAlchemy) -> None:
@@ -55,7 +62,7 @@ def _create_quiz_table(db: SQLAlchemy) -> None:
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """
-    _execute_query(db, query)
+    _execute_query(db, query, True)
 
 
 def _create_quiz_question_table(db: SQLAlchemy) -> None:
@@ -68,7 +75,7 @@ def _create_quiz_question_table(db: SQLAlchemy) -> None:
         FOREIGN KEY (quiz_id) REFERENCES Quiz (quiz_id)
     )
     """
-    _execute_query(db, query)
+    _execute_query(db, query, True)
 
 
 def _create_quiz_option_table(db: SQLAlchemy) -> None:
@@ -81,15 +88,20 @@ def _create_quiz_option_table(db: SQLAlchemy) -> None:
         FOREIGN KEY (question_id) REFERENCES QuizQuestion (question_id)
     )
     """
-    _execute_query(db, query)
+    _execute_query(db, query, True)
 
 
-def _create_full_quiz_view(db: SQLAlchemy) -> None:
-    """Generate the full quiz view containing the tables Quiz, QuizQuestion
+def select_full_quiz(db: SQLAlchemy) -> CursorResult:
+    """Select full quiz view containing the tables Quiz, QuizQuestion
     and QuizOption.
+    Parameters:
+        - db (flask_sqlalchemy.extension.SQLAlchemy): SQL database to execute
+            the query.
+
+    Returns:
+        CursorResult: return result of the SQL cursor
     """
     query = """
-    CREATE VIEW IF NOT EXISTS viewFullQuiz AS
     SELECT
         Quiz.quiz_id AS quiz_id,
         Quiz.name AS name,
@@ -102,6 +114,7 @@ def _create_full_quiz_view(db: SQLAlchemy) -> None:
     INNER JOIN QuizQuestion
     ON Quiz.quiz_id = QuizQuestion.quiz_id
     INNER JOIN QuizOption
-    ON QuizQuestion.question_id = QuizOption.option_id
+    ON QuizQuestion.question_id = QuizOption.question_id
     """
-    _execute_query(db, query)
+    result = _execute_query(db, query, False)
+    return result

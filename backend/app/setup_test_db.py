@@ -44,13 +44,13 @@ def _insert_sample_options(db: SQLAlchemy) -> None:
     """Insert sample questions for testing."""
     data_list = [
         {'question_id': '1', 'text': 'Window'},
-        {'question_id': '2', 'text': '2'},
-        {'question_id': '3', 'text': '2x'},
-        {'question_id': '4', 'text': 'x^3/3'},
-        {'question_id': '5', 'text': 'What?'},
-        {'question_id': '6', 'text': 'Watt'},
-        {'question_id': '7', 'text': 'To get to the other side'},
-        {'question_id': '8', 'text': 'No'},
+        {'question_id': '1', 'text': '2'},
+        {'question_id': '2', 'text': '2x'},
+        {'question_id': '2', 'text': 'x^3/3'},
+        {'question_id': '3', 'text': 'What?'},
+        {'question_id': '3', 'text': 'Watt'},
+        {'question_id': '4', 'text': 'To get to the other side'},
+        {'question_id': '4', 'text': 'No'},
     ]
     for data in data_list:
         row = QuizOption(

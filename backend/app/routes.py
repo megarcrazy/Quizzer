@@ -2,8 +2,7 @@ from typing import Dict, List
 from flask import jsonify
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.exc import SQLAlchemyError
-from app import app
-from app.models import Quiz, QuizQuestion, QuizOption, ViewFullQuiz
+from app import app, db, Quiz, QuizQuestion, QuizOption, sql_functions
 
 # Routes for testing and debugging the database
 
@@ -43,7 +42,7 @@ def get_quiz_questions():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/debug-quiz-question', methods=['GET'])
+@app.route('/debug-quiz-option', methods=['GET'])
 def get_quiz_options():
     """Get all quiz option data."""
     try:
@@ -53,11 +52,15 @@ def get_quiz_options():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/debug-fullquiz', methods=['GET'])
+@app.route('/debug-full-quiz', methods=['GET'])
 def get_fullquiz():
     """Get all full quiz data."""
     try:
-        response = _fetch_table_data(ViewFullQuiz)
+        cursor_result = sql_functions.select_full_quiz(db)
+        rows = cursor_result.fetchall()  # Get all table rows
+        keys = cursor_result.keys()  # Get table columns
+        # Generate dictionary using keys and rows of data
+        response = [dict(zip(keys, row)) for row in rows]
         return jsonify({'full_quiz': response})
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 500

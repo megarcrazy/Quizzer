@@ -1,9 +1,9 @@
 import logging
 from flask import Flask
 from .config import Config
-from app.models import db
+from app.models import db, Quiz, QuizQuestion, QuizOption  # noqa: F401
 import app.setup_test_db as setup_test_db
-from app.create_tables_and_views import create_new_tables_and_views
+import app.sql_functions as sql_functions
 
 # Set logger on debug level
 logger = logging.getLogger()
@@ -17,7 +17,7 @@ db.init_app(app)
 # Setup testing environment for application and database using sqlite
 with app.app_context():
     if Config.NEW_ENVIRONMENT:
-        create_new_tables_and_views(db)  # Create tables and views
+        sql_functions.create_new_tables(db)  # Create tables and views
 
         # Insert sample values to the database
         setup_test_db.insert_sample_data(db)

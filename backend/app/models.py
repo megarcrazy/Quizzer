@@ -51,16 +51,3 @@ class QuizOption(db.Model):
 
     # Text represention of quiz option
     text = db.Column(db.String(20), nullable=False)
-
-
-class ViewFullQuiz(db.Model):
-    __tablename__ = 'viewFullQuiz'
-    __table_args__ = {'info': dict(is_view=True)}
-
-    quiz_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20))
-    code = db.Column(db.String(8))
-    created_at = db.Column(db.DateTime)
-    updated_at = db.Column(db.DateTime)
-    question_text = db.Column(db.String(100))
-    option_text = db.Column(db.String(100))
