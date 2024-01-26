@@ -9,21 +9,29 @@ import app.sql_functions as sql_functions  # noqa: F401
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# Initiate Flask
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = Config.SQLALCHEMY_DATABASE_URI
-db.init_app(app)
 
-# Setup testing environment for application and database using sqlite
-with app.app_context():
-    if Config.NEW_ENVIRONMENT:
-        db.drop_all()
-        db.create_all()  # Create tables and views
+def create_app() -> None:
+    """Create flask app object."""
+    # Initiate Flask
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = Config.SQLALCHEMY_DATABASE_URI
+    db.init_app(app)
 
-        # Insert sample values to the database
-        setup_test_db.insert_sample_data(db)
-    else:
-        db.create_all()
+    # Setup testing environment for application and database using sqlite
+    with app.app_context():
+        if Config.NEW_ENVIRONMENT:
+            db.drop_all()
+            db.create_all()  # Create tables and views
+
+            # Insert sample values to the database
+            setup_test_db.insert_sample_data(db)
+        else:
+            db.create_all()
+    return app
+
+
+app = create_app()
+
 
 # Import routes to access the Flask application routes
 from app import routes  # noqa: E402, F401

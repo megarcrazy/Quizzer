@@ -1,22 +1,25 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 from app import Quiz, QuizQuestion, QuizOption
 
 
-def select_full_quiz(session: Session) -> List[Dict[str, Any]]:
+def select_full_quiz(
+    session: Session, quiz_id: Optional[int] = None
+) -> List[Dict[str, Any]]:
     """Select full quiz view containing the tables Quiz, QuizQuestion
     and QuizOption.
 
     Parameters:
         - session (Session): database session to execute query.
+        - quiz_id (Optional[int]): optional quiz ID to filter results.
 
     Returns:
         List[Dict[str, Any]]: returns dictionary list representation of the
             full quiz.
     """
-    query_result = (
+    query = (
         session.query(
             Quiz.quiz_id,
             Quiz.name,
@@ -30,8 +33,14 @@ def select_full_quiz(session: Session) -> List[Dict[str, Any]]:
         )
         .join(QuizQuestion, QuizQuestion.quiz_id == Quiz.quiz_id)
         .join(QuizOption, QuizOption.question_id == QuizQuestion.question_id)
-        .all()
     )
+
+    # Filter quiz by quiz id
+    if quiz_id is not None:
+        query = query.filter(Quiz.quiz_id == quiz_id)
+
+    query_result = query.all()
+
     json_dict_list = _sql_row_to_dict_list(query_result)
     return json_dict_list
 

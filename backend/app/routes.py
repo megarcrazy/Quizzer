@@ -1,5 +1,6 @@
 import logging
-from flask import jsonify
+from typing import Optional
+from flask import jsonify, Response
 from app import app, db, Quiz, QuizQuestion, QuizOption, sql_functions
 
 
@@ -37,10 +38,11 @@ def get_quiz_options():
 
 
 @app.route('/debug-full-quiz', methods=['GET'])
-def get_full_quiz():
-    """Get all full quiz data."""
+@app.route('/debug-full-quiz/<quiz_id>', methods=['GET'])
+def get_full_quiz(quiz_id: Optional[str] = None) -> Response:
+    """Get all full quiz data with quiz id filter."""
     try:
-        data = sql_functions.select_full_quiz(session=db.session)
+        data = sql_functions.select_full_quiz(db.session, quiz_id)
         return jsonify({'full_quiz': data})
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
