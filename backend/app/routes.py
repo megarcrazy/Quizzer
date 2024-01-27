@@ -1,7 +1,9 @@
 import logging
 from typing import Optional
-from flask import jsonify, Response
-from app import app, db, Quiz, QuizQuestion, QuizOption, sql_functions
+from flask import Blueprint, jsonify, Response
+from app import db, Quiz, QuizQuestion, QuizOption, sql_functions
+
+app = Blueprint('app', __name__)
 
 
 @app.route('/debug-quiz', methods=['GET'])
