@@ -16,8 +16,8 @@ def create_app(database_url: str, toggle_new_database: bool) -> None:
 
     Args:
         database_url (str): SQL database url to connect.
-        toggle_new_database (bool): Will reset database when creating
-            app if True.
+        toggle_new_database (bool): Will reset database with sample data when
+            creating app if True.
     """
     # Initiate Flask
     app = Flask(__name__)
