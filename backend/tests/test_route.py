@@ -1,11 +1,7 @@
 from typing import Any, Dict
 import unittest
-import sys
-import os
 from flask_sqlalchemy.model import DefaultMeta
-project_root = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(project_root, '..'))
-from app import create_app, db, Quiz, QuizOption, QuizQuestion  # Noqa E402
+from app import create_app, db, Quiz, QuizOption, QuizQuestion
 
 
 class TestRoute(unittest.TestCase):
