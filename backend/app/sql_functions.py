@@ -7,7 +7,10 @@ from sqlalchemy.orm import Session
 from app import db, Quiz, QuizQuestion, QuizOption
 
 
-# Debug method
+# ------------------------------
+# Debug methods
+# ------------------------------
+
 def fetch_table_data(table: DefaultMeta) -> List[Dict[str, Any]]:
     """Dynamically fetch all of table data from SQL and return json list.
 
@@ -32,6 +35,10 @@ def fetch_table_data(table: DefaultMeta) -> List[Dict[str, Any]]:
     return response
 
 
+# ------------------------------
+# Context manager
+# ------------------------------
+
 @contextmanager
 def _get_session(commit_query: bool, raise_error: bool
                  ) -> Generator[Session, None, None]:
@@ -48,6 +55,10 @@ def _get_session(commit_query: bool, raise_error: bool
         if raise_error:
             raise e
 
+
+# ------------------------------
+# SQL session methods
+# ------------------------------
 
 def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     """Select full quiz view containing the tables Quiz, QuizQuestion
@@ -84,6 +95,10 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     json_dict_list = _sql_row_to_dict_list(query_result)
     return json_dict_list
 
+
+# ------------------------------
+# Helper methods
+# ------------------------------
 
 def _sql_row_to_dict_list(query_result: List[Row]) -> List[Dict[str, Any]]:
     """Convert SQL query list of row result to json dictionary list."""

@@ -4,8 +4,11 @@ from app import Quiz, QuizQuestion, QuizOption, sql_functions
 
 app = Blueprint('app', __name__)
 
+# ------------------------------
+# Debug methods
+# ------------------------------
 
-# Debug method
+
 @app.route('/debug-quiz', methods=['GET'])
 def get_quizzes():
     """Get all quiz data."""
@@ -17,7 +20,6 @@ def get_quizzes():
         return jsonify({'error': 'An error occurred'}), 500
 
 
-# Debug method
 @app.route('/debug-quiz-question', methods=['GET'])
 def get_quiz_questions():
     """Get all quiz question data."""
@@ -29,7 +31,6 @@ def get_quiz_questions():
         return jsonify({'error': 'An error occurred'}), 500
 
 
-# Debug method
 @app.route('/debug-quiz-option', methods=['GET'])
 def get_quiz_options():
     """Get all quiz option data."""
@@ -39,6 +40,11 @@ def get_quiz_options():
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
         return jsonify({'error': 'An error occurred'}), 500
+
+
+# ------------------------------
+# Route methods
+# ------------------------------
 
 
 @app.route('/get-full-quiz/<quiz_id>', methods=['GET'])
