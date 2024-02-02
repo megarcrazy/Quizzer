@@ -27,7 +27,7 @@ class TestRoute(unittest.TestCase):
     def test_full_quiz_empty_table(self) -> None:
         """Empty table with no data."""
         # Arrange
-        route = '/debug-full-quiz'
+        route = '/get-full-quiz'
 
         # Act
         response = self._client.get(route)
@@ -52,7 +52,7 @@ class TestRoute(unittest.TestCase):
         option_data = {'text': 'Blue', 'question_id': 1}
         self.insert_sample_data(QuizOption, option_data)
 
-        route = '/debug-full-quiz'
+        route = '/get-full-quiz'
 
         # Act
         response = self._client.get(route)
@@ -83,7 +83,3 @@ class TestRoute(unittest.TestCase):
         self.assertEqual(dict_data['question_id'], 1)
         self.assertEqual(dict_data['question_text'], 'Favourite colour?')
         self.assertEqual(dict_data['quiz_id'], 1)
-
-
-if __name__ == '__main__':
-    unittest.main(exit=False)

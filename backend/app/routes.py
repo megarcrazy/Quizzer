@@ -1,11 +1,12 @@
 import logging
 from typing import Optional
 from flask import Blueprint, jsonify, Response
-from app import db, Quiz, QuizQuestion, QuizOption, sql_functions
+from app import Quiz, QuizQuestion, QuizOption, sql_functions
 
 app = Blueprint('app', __name__)
 
 
+# Debug method
 @app.route('/debug-quiz', methods=['GET'])
 def get_quizzes():
     """Get all quiz data."""
@@ -17,6 +18,7 @@ def get_quizzes():
         return jsonify({'error': 'An error occurred'}), 500
 
 
+# Debug method
 @app.route('/debug-quiz-question', methods=['GET'])
 def get_quiz_questions():
     """Get all quiz question data."""
@@ -28,6 +30,7 @@ def get_quiz_questions():
         return jsonify({'error': 'An error occurred'}), 500
 
 
+# Debug method
 @app.route('/debug-quiz-option', methods=['GET'])
 def get_quiz_options():
     """Get all quiz option data."""
@@ -39,12 +42,12 @@ def get_quiz_options():
         return jsonify({'error': 'An error occurred'}), 500
 
 
-@app.route('/debug-full-quiz', methods=['GET'])
-@app.route('/debug-full-quiz/<quiz_id>', methods=['GET'])
+@app.route('/get-full-quiz', methods=['GET'])
+@app.route('/get-full-quiz/<quiz_id>', methods=['GET'])
 def get_full_quiz(quiz_id: Optional[str] = None) -> Response:
     """Get all full quiz data with quiz id filter."""
     try:
-        data = sql_functions.select_full_quiz(db.session, quiz_id)
+        data = sql_functions.select_full_quiz(quiz_id)
         return jsonify({'full_quiz': data})
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
