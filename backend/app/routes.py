@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 from flask import Blueprint, jsonify, Response
 from app import Quiz, QuizQuestion, QuizOption, sql_functions
 
@@ -42,9 +41,8 @@ def get_quiz_options():
         return jsonify({'error': 'An error occurred'}), 500
 
 
-@app.route('/get-full-quiz', methods=['GET'])
 @app.route('/get-full-quiz/<quiz_id>', methods=['GET'])
-def get_full_quiz(quiz_id: Optional[str] = None) -> Response:
+def get_full_quiz(quiz_id: str) -> Response:
     """Get all full quiz data with quiz id filter."""
     try:
         data = sql_functions.select_full_quiz(quiz_id)

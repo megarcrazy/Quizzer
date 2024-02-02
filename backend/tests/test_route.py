@@ -4,7 +4,7 @@ from flask_sqlalchemy.model import DefaultMeta
 from app import create_app, db, Quiz, QuizOption, QuizQuestion
 
 
-class TestRoute(unittest.TestCase):
+class RouteSetup(unittest.TestCase):
     """Flask application route testing class."""
 
     def setUp(self) -> None:
@@ -13,7 +13,7 @@ class TestRoute(unittest.TestCase):
         self._app = create_app(database_url, False)
         self._client = self._app.test_client()
 
-    def insert_sample_data(
+    def _insert_sample_data(
         self, Table: DefaultMeta, data: Dict[str, Any]
     ) -> None:
         """Insert sample row data to sqlite database."""
@@ -24,10 +24,18 @@ class TestRoute(unittest.TestCase):
             db.session.commit()
         return new_row
 
+
+class TestGetFullQuiz(RouteSetup):
+    """Test get_full_quiz."""
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self._route = '/get-full-quiz'
+
     def test_full_quiz_empty_table(self) -> None:
-        """Empty table with no data."""
+        """Empty table with no data or quiz does not exist."""
         # Arrange
-        route = '/get-full-quiz'
+        route = f'{self._route}/1'
 
         # Act
         response = self._client.get(route)
@@ -44,15 +52,15 @@ class TestRoute(unittest.TestCase):
         """Empty table with no data."""
         # Arrange
         quiz_data = {'name': 'Test Quiz', 'code': '12345'}
-        self.insert_sample_data(Quiz, quiz_data)
+        self._insert_sample_data(Quiz, quiz_data)
 
         question_data = {'text': 'Favourite colour?', 'quiz_id': 1}
-        self.insert_sample_data(QuizQuestion, question_data)
+        self._insert_sample_data(QuizQuestion, question_data)
 
         option_data = {'text': 'Blue', 'question_id': 1}
-        self.insert_sample_data(QuizOption, option_data)
+        self._insert_sample_data(QuizOption, option_data)
 
-        route = '/get-full-quiz'
+        route = f'{self._route}/1'
 
         # Act
         response = self._client.get(route)

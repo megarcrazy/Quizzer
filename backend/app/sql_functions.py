@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List
 from contextlib import contextmanager
 import logging
 from flask_sqlalchemy.model import DefaultMeta
@@ -33,35 +33,34 @@ def fetch_table_data(table: DefaultMeta) -> List[Dict[str, Any]]:
 
 
 @contextmanager
-def _get_session(commit_query: bool) -> Generator[Session, None, None]:
+def _get_session(commit_query: bool, raise_error: bool
+                 ) -> Generator[Session, None, None]:
     """Session context manager with commit query toggle."""
     try:
         session = db.session
         yield session
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
+        # Rollback all commits if commit fails
         if commit_query:
             db.session.rollback()
-    else:
-        if commit_query:
-            db.session.commit()
+        # Raise error to catch at the decorated function
+        if raise_error:
+            raise e
 
 
-def select_full_quiz(
-    quiz_id: Optional[int] = None
-) -> List[Dict[str, Any]]:
+def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     """Select full quiz view containing the tables Quiz, QuizQuestion
     and QuizOption.
 
     Parameters:
-        - session (Session): database session to execute query.
-        - quiz_id (Optional[int]): optional quiz ID to filter results.
+        - quiz_id (str): Quiz ID to filter results to grab specific quiz.
 
     Returns:
-        List[Dict[str, Any]]: returns dictionary list representation of the
+        List[Dict[str, Any]]: Returns dictionary list representation of the
             full quiz.
     """
-    with _get_session(commit_query=False) as session:
+    with _get_session(False, False) as session:
         query = (
             session.query(
                 Quiz.quiz_id,
@@ -77,11 +76,8 @@ def select_full_quiz(
             .join(QuizQuestion, QuizQuestion.quiz_id == Quiz.quiz_id)
             .join(QuizOption,
                   QuizOption.question_id == QuizQuestion.question_id)
+            .filter(Quiz.quiz_id == quiz_id)
         )
-
-        # Filter quiz by quiz id
-        if quiz_id is not None:
-            query = query.filter(Quiz.quiz_id == quiz_id)
 
         query_result = query.all()
 
