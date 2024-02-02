@@ -35,6 +35,9 @@ class QuizQuestion(db.Model):
     quiz_id = db.Column(
         db.Integer, db.ForeignKey('Quiz.quiz_id'), nullable=False)
 
+    # Question number to show position in quiz
+    question_number = db.Column(db.Integer, nullable=False)
+
     # Text representation of question
     text = db.Column(db.String(100), nullable=False)
 
@@ -48,6 +51,9 @@ class QuizOption(db.Model):
     # Foreign key to quiz question table
     question_id = db.Column(
         db.Integer, db.ForeignKey('QuizQuestion.question_id'), nullable=False)
+
+    # Question number to show position in question
+    option_number = db.Column(db.Integer, nullable=False)
 
     # Text represention of quiz option
     text = db.Column(db.String(20), nullable=False)

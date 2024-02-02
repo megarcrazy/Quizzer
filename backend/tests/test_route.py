@@ -54,10 +54,11 @@ class TestGetFullQuiz(RouteSetup):
         quiz_data = {'name': 'Test Quiz', 'code': '12345'}
         self._insert_sample_data(Quiz, quiz_data)
 
-        question_data = {'text': 'Favourite colour?', 'quiz_id': 1}
+        question_data = {'text': 'Favourite colour?', 'question_number': 1,
+                         'quiz_id': 1}
         self._insert_sample_data(QuizQuestion, question_data)
 
-        option_data = {'text': 'Blue', 'question_id': 1}
+        option_data = {'text': 'Blue', 'option_number': 1, 'question_id': 1}
         self._insert_sample_data(QuizOption, option_data)
 
         route = f'{self._route}/1'
@@ -73,21 +74,17 @@ class TestGetFullQuiz(RouteSetup):
         self.assertCountEqual(
             dict_data.keys(),
             [
-                'code',
-                'created_at',
-                'name',
-                'option_id',
-                'option_text',
-                'question_id',
-                'question_text',
-                'quiz_id',
-                'updated_at'
+                'code', 'created_at', 'name', 'option_id', 'option_number',
+                'option_text', 'question_id', 'question_number',
+                'question_text', 'quiz_id', 'updated_at'
             ]
         )
         self.assertEqual(dict_data['code'], '12345')
         self.assertEqual(dict_data['name'], 'Test Quiz')
         self.assertEqual(dict_data['option_id'], 1)
+        self.assertEqual(dict_data['option_number'], 1)
         self.assertEqual(dict_data['option_text'], 'Blue')
         self.assertEqual(dict_data['question_id'], 1)
+        self.assertEqual(dict_data['question_number'], 1)
         self.assertEqual(dict_data['question_text'], 'Favourite colour?')
         self.assertEqual(dict_data['quiz_id'], 1)

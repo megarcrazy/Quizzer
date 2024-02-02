@@ -50,7 +50,8 @@ class TestORM(unittest.TestCase):
         # Arrange
         quiz_question_data = {
             'quiz_id': 1,
-            'text': 'What is the unit of power?'
+            'question_number': 1,
+            'text': 'What is the unit of power?',
         }
 
         # Act
@@ -62,10 +63,12 @@ class TestORM(unittest.TestCase):
 
             # Get row values
             quiz_id = new_row.quiz_id
+            question_number = new_row.question_number
             text = new_row.text
 
         # Assert
         self.assertEqual(quiz_id, 1)
+        self.assertEqual(question_number, 1)
         self.assertEqual(text, 'What is the unit of power?')
 
     def test_quiz_option_table(self) -> None:
@@ -73,6 +76,7 @@ class TestORM(unittest.TestCase):
         # Arrange
         quiz_option_data = {
             'question_id': 1,
+            'option_number': 1,
             'text': 'Watt'
         }
 
@@ -85,8 +89,10 @@ class TestORM(unittest.TestCase):
 
             # Get row values
             question_id = new_row.question_id
+            option_number = new_row.option_number
             text = new_row.text
 
         # Assert
         self.assertEqual(question_id, 1)
+        self.assertEqual(option_number, 1)
         self.assertEqual(text, 'Watt')

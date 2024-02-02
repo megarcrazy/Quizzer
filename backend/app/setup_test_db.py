@@ -26,16 +26,16 @@ def _insert_sample_quizzes(db: SQLAlchemy) -> None:
 def _insert_sample_questions(db: SQLAlchemy) -> None:
     """Insert sample questions for testing."""
     data_list = [
-        {'quiz_id': '1', 'text': 'Evaluate 1 + 1'},
-        {'quiz_id': '1', 'text': 'Find the derivative of x^2 in terms of x'},
-        {'quiz_id': '2', 'text': 'What is the unit of power?'},
-        {'quiz_id': '2', 'text': 'Why did the chicken cross the road?'},
+        {'quiz_id': '1', 'text': 'Evaluate 1 + 1', 'question_number': 1},
+        {'quiz_id': '1', 'text': 'Find the derivative of x^2 in terms of x',
+         'question_number': 2},
+        {'quiz_id': '2', 'text': 'What is the unit of power?',
+         'question_number': 3},
+        {'quiz_id': '2', 'text': 'Why did the chicken cross the road?',
+         'question_number': 4},
     ]
     for data in data_list:
-        row = QuizQuestion(
-            quiz_id=data['quiz_id'],
-            text=data['text']
-        )
+        row = QuizQuestion(**data)
         db.session.add(row)
     db.session.commit()
 
@@ -43,19 +43,17 @@ def _insert_sample_questions(db: SQLAlchemy) -> None:
 def _insert_sample_options(db: SQLAlchemy) -> None:
     """Insert sample questions for testing."""
     data_list = [
-        {'question_id': '1', 'text': 'Window'},
-        {'question_id': '1', 'text': '2'},
-        {'question_id': '2', 'text': '2x'},
-        {'question_id': '2', 'text': 'x^3/3'},
-        {'question_id': '3', 'text': 'What?'},
-        {'question_id': '3', 'text': 'Watt'},
-        {'question_id': '4', 'text': 'To get to the other side'},
-        {'question_id': '4', 'text': 'No'},
+        {'question_id': '1', 'text': 'Window', 'option_number': 1},
+        {'question_id': '1', 'text': '2', 'option_number': 2},
+        {'question_id': '2', 'text': '2x', 'option_number': 1},
+        {'question_id': '2', 'text': 'x^3/3', 'option_number': 2},
+        {'question_id': '3', 'text': 'What?', 'option_number': 1},
+        {'question_id': '3', 'text': 'Watt', 'option_number': 2},
+        {'question_id': '4', 'text': 'To get to the other side',
+         'option_number': 1},
+        {'question_id': '4', 'text': 'No', 'option_number': 2},
     ]
     for data in data_list:
-        row = QuizOption(
-            question_id=data['question_id'],
-            text=data['text']
-        )
+        row = QuizOption(**data)
         db.session.add(row)
     db.session.commit()

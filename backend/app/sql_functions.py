@@ -80,8 +80,10 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
                 Quiz.created_at,
                 Quiz.updated_at,
                 QuizQuestion.question_id,
+                QuizQuestion.question_number,
                 QuizQuestion.text.label('question_text'),
                 QuizOption.option_id,
+                QuizOption.option_number,
                 QuizOption.text.label('option_text')
             )
             .join(QuizQuestion, QuizQuestion.quiz_id == Quiz.quiz_id)
