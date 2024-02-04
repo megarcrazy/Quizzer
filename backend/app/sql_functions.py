@@ -1,4 +1,7 @@
-from typing import Any, Dict, Generator, List
+from datetime import datetime
+import random
+import string
+from typing import Any, Dict, Generator, List, Optional
 from contextlib import contextmanager
 import logging
 from flask_sqlalchemy.model import DefaultMeta
@@ -55,10 +58,10 @@ def _get_session(commit_query: bool, raise_error: bool
         if raise_error:
             raise e
 
-
 # ------------------------------
 # SQL session methods
 # ------------------------------
+
 
 def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     """Select full quiz view containing the tables Quiz, QuizQuestion
@@ -98,6 +101,62 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     return json_dict_list
 
 
+def save_quiz(question_data: Dict[str, Any]) -> None:
+    """
+    Update quiz details, questions, and options.
+
+    Args:
+        data (Dict[str, Any]): Nested dictionary containing data for quiz,
+            quiz questions and quiz question optinos.
+            'data' exists in the format:
+            data = {
+                'quiz_data': {
+                    'quiz_id': int,
+                    'name': str,
+                    'quiz_question_data': [
+                        {
+                            'question_number': int,
+                            'text': str,
+                            'quiz_option_data: [
+                                {
+                                    'option_number': int,
+                                    'text': str
+                                }
+                            ]
+                        }...
+                    ]
+                }
+            }
+    """
+    # Use session to make changes in the database
+    successfully_commited = False
+    with _get_session(True, True) as session:
+        # Get quiz data
+        quiz_data = question_data['quiz_data']
+
+        # Save quiz details
+        quiz_id = _save_quiz_row(session, quiz_data)
+
+        # Extract question data
+        question_data_list = quiz_data['quiz_question_data']
+
+        for question_data in question_data_list:
+            # Save quiz question details
+            question_id = _save_question_row(session, question_data, quiz_id)
+
+            # Extract option data
+            option_data_list = question_data['quiz_option_data']
+
+            for option_data in option_data_list:
+                # Save quiz option details
+                _save_option_rows(session, option_data, question_id)
+
+        # Flag commits were successful
+        successfully_commited = True
+
+    return successfully_commited
+
+
 # ------------------------------
 # Helper methods
 # ------------------------------
@@ -111,3 +170,138 @@ def _sql_row_to_dict_list(query_result: List[Row]) -> List[Dict[str, Any]]:
         row_dictionary = dict(row._mapping)
         json_dict_list.append(row_dictionary)
     return json_dict_list
+
+
+def _row_exist(session: Session, table: DefaultMeta, filters: Dict[str, Any]
+               ) -> Optional[Row]:
+    """Check if data exists after filtering a table."""
+    data = session.query(table).filter_by(**filters).first()
+    if data:
+        # Return data if at least one row found
+        return data
+    # Return None if no rows found
+    return None
+
+
+def _generate_random_code(length: Optional[int] = 8) -> str:
+    """Generate a random code with given length with lower case ASCII letters
+    and digits.
+    """
+    characters = string.ascii_lowercase + string.digits
+    code = ''.join(random.choice(characters) for _ in range(length))
+    return code
+
+
+def _insert_row(session: Session, table: DefaultMeta, values: Dict[str, Any]
+                ) -> Row:
+    """Insert row into SQL table with new values."""
+    new_row = table(values)
+
+    # Append new row
+    session.add(new_row)
+
+
+def _update_row(session: Session, table: DefaultMeta, filters: Dict[str, Any],
+                values: Dict[str, Any]) -> None:
+    """Update row in SQL with filters and new values."""
+    session.query(table).filter(filters).values(values)
+
+
+def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
+    """Save quiz row and return quiz ID."""
+    quiz_id = quiz_data['quiz_id']
+    quiz_name = quiz_data['name']
+    if quiz_id == 0:
+        # If the given quiz ID is 0, create new quiz
+        values = {
+            Quiz.updated_at.name: quiz_name,
+            Quiz.code.name: _generate_random_code(),
+        }
+        quiz = _insert_row(session, Quiz, values)
+    else:
+        # Update quiz for given quiz ID
+        filters = {Quiz.quiz_id.name: quiz_id}
+        values = {
+            Quiz.name.name: quiz_name,
+            Quiz.updated_at: datetime.now()
+        }
+        _update_row(session, Quiz, filters, values)
+
+    # Commit and get quiz ID
+    session.commit()
+    quiz_id = quiz.quiz_id
+    return quiz_id
+
+
+def _save_question_row(session: Session, question_data: Dict[str, Any],
+                       quiz_id: int) -> int:
+    """Save question row and return question ID dictionary."""
+    # Extract data from dictionary
+    question_number = question_data['question_number']
+    text = question_data['text']
+
+    # Check if question number index already has a question
+    exist_filters = {
+        QuizQuestion.quiz_id.name: quiz_id,
+        QuizQuestion.question_number.name: question_number
+    }
+    question = _row_exist(session, QuizQuestion, exist_filters)
+
+    # Add new SQL row if the question number does not exist
+    if question is None:
+        # Add new question
+        values = {
+            QuizQuestion.quiz_id: quiz_id,
+            QuizQuestion.text.name: text
+        }
+        question = _insert_row(session, QuizQuestion, values)
+    else:
+        # Update quiz question for given quiz ID
+        filters = {
+            QuizQuestion.quiz_id.name: quiz_id,
+            QuizQuestion.question_number.name: question_number
+        }
+        values = {QuizQuestion.text.name: text}
+        _update_row(session, QuizQuestion, filters, values)
+
+    # Commit and get question ID
+    session.commit()
+    question_id = question.question_id
+    return question_id
+
+
+def _save_option_rows(session: Session, option_data: Dict[str, Any],
+                      question_id: int) -> None:
+    """Save option row."""
+    # Extract data from dictionary
+    option_number = option_data['question_number']
+    text = option_data['text']
+
+    # Check if question number index already has a question
+    filters = {
+        QuizOption.question_id.name: question_id,
+        QuizOption.option_number.name: option_number
+    }
+    option = _row_exist(session, QuizOption, filters)
+
+    # Add new SQL row if the option number does not exist
+    if option is None:
+        # Add new option
+        values = {
+            QuizOption.option_number.name: option_number,
+            QuizOption.text.name: text
+        }
+        option = _insert_row(session, QuizOption, values)
+    else:
+        # Update quiz question for given quiz ID
+        filters = {
+            QuizOption.question_id.name: question_id,
+            QuizOption.option_number.name: option_number
+        }
+        values = {QuizOption.text.name: text}
+        _update_row(session, QuizOption, filters, values)
+
+    # Commit and get question ID
+    session.commit()
+    question_id = option.question_id
+    return question_id
