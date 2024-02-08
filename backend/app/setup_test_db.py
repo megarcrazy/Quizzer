@@ -11,14 +11,11 @@ def insert_sample_data(db: SQLAlchemy) -> None:
 def _insert_sample_quizzes(db: SQLAlchemy) -> None:
     """Insert sample quiz values for testing."""
     data_list = [
-        {'name': 'Math', 'code': 'ASDASDAA'},
-        {'name': 'Science', 'code': 'FGFGFGFG'}
+        {'name': 'Math'},
+        {'name': 'Science'}
     ]
     for data in data_list:
-        row = Quiz(
-            name=data['name'],
-            code=data['code']
-        )
+        row = Quiz(name=data['name'])
         db.session.add(row)
     db.session.commit()
 

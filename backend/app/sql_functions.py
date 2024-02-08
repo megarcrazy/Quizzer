@@ -1,6 +1,4 @@
 from datetime import datetime
-import random
-import string
 from typing import Any, Dict, Generator, List, Optional
 from contextlib import contextmanager
 import logging
@@ -79,7 +77,6 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
             session.query(
                 Quiz.quiz_id,
                 Quiz.name,
-                Quiz.code,
                 Quiz.created_at,
                 Quiz.updated_at,
                 QuizQuestion.question_id,
@@ -183,15 +180,6 @@ def _row_exist(session: Session, table: DefaultMeta, filters: Dict[str, Any]
     return None
 
 
-def _generate_random_code(length: Optional[int] = 8) -> str:
-    """Generate a random code with given length with lower case ASCII letters
-    and digits.
-    """
-    characters = string.ascii_lowercase + string.digits
-    code = ''.join(random.choice(characters) for _ in range(length))
-    return code
-
-
 def _insert_row(session: Session, table: DefaultMeta, values: Dict[str, Any]
                 ) -> Row:
     """Insert row into SQL table with new values."""
@@ -213,10 +201,7 @@ def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
     quiz_name = quiz_data['name']
     if quiz_id == 0:
         # If the given quiz ID is 0, create new quiz
-        values = {
-            Quiz.updated_at.name: quiz_name,
-            Quiz.code.name: _generate_random_code(),
-        }
+        values = {Quiz.updated_at.name: quiz_name}
         quiz = _insert_row(session, Quiz, values)
     else:
         # Update quiz for given quiz ID

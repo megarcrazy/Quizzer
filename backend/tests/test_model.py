@@ -19,7 +19,6 @@ class TestORM(unittest.TestCase):
         # Arrange
         quiz_data = {
             'name': 'Quiz Test',
-            'code': 'abcde',
             'created_at': datetime.now(),
             'updated_at': datetime.now()
         }
@@ -33,14 +32,12 @@ class TestORM(unittest.TestCase):
 
             # Get row values
             name = new_row.name
-            code = new_row.code
             quiz_id = new_row.quiz_id
             created_at = new_row.created_at
             updated_at = new_row.updated_at
 
         # Assert
         self.assertEqual(name, 'Quiz Test')
-        self.assertEqual(code, 'abcde')
         self.assertEqual(quiz_id, 1)
         self.assertEqual(created_at, datetime(2022, 1, 1, 12, 0, 0))
         self.assertEqual(updated_at, datetime(2022, 1, 1, 12, 0, 0))

@@ -51,7 +51,7 @@ class TestGetFullQuiz(RouteSetup):
     def test_full_quiz_one_line(self) -> None:
         """Empty table with no data."""
         # Arrange
-        quiz_data = {'name': 'Test Quiz', 'code': '12345'}
+        quiz_data = {'name': 'Test Quiz'}
         self._insert_sample_data(Quiz, quiz_data)
 
         question_data = {'text': 'Favourite colour?', 'question_number': 1,
@@ -74,12 +74,11 @@ class TestGetFullQuiz(RouteSetup):
         self.assertCountEqual(
             dict_data.keys(),
             [
-                'code', 'created_at', 'name', 'option_id', 'option_number',
+                'created_at', 'name', 'option_id', 'option_number',
                 'option_text', 'question_id', 'question_number',
                 'question_text', 'quiz_id', 'updated_at'
             ]
         )
-        self.assertEqual(dict_data['code'], '12345')
         self.assertEqual(dict_data['name'], 'Test Quiz')
         self.assertEqual(dict_data['option_id'], 1)
         self.assertEqual(dict_data['option_number'], 1)

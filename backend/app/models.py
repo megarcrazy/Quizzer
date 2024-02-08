@@ -15,9 +15,6 @@ class Quiz(db.Model):
     # Name of the quiz
     name = db.Column(db.String(20), nullable=False)
 
-    # Random unique code generated for the quiz
-    code = db.Column(db.String(8), nullable=False, unique=True)
-
     # Created date
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
