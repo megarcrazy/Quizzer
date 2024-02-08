@@ -114,7 +114,7 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
                         {
                             'question_number': int,
                             'text': str,
-                            'quiz_option_data: [
+                            'quiz_option_data': [
                                 {
                                     'option_number': int,
                                     'text': str
@@ -183,16 +183,18 @@ def _row_exist(session: Session, table: DefaultMeta, filters: Dict[str, Any]
 def _insert_row(session: Session, table: DefaultMeta, values: Dict[str, Any]
                 ) -> Row:
     """Insert row into SQL table with new values."""
-    new_row = table(values)
+    new_row = table(**values)
 
     # Append new row
     session.add(new_row)
+
+    return new_row
 
 
 def _update_row(session: Session, table: DefaultMeta, filters: Dict[str, Any],
                 values: Dict[str, Any]) -> None:
     """Update row in SQL with filters and new values."""
-    session.query(table).filter(filters).values(values)
+    session.query(table).filter(**filters).values(values)
 
 
 def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
@@ -201,14 +203,14 @@ def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
     quiz_name = quiz_data['name']
     if quiz_id == 0:
         # If the given quiz ID is 0, create new quiz
-        values = {Quiz.updated_at.name: quiz_name}
+        values = {Quiz.name.name: quiz_name}
         quiz = _insert_row(session, Quiz, values)
     else:
         # Update quiz for given quiz ID
         filters = {Quiz.quiz_id.name: quiz_id}
         values = {
             Quiz.name.name: quiz_name,
-            Quiz.updated_at: datetime.now()
+            Quiz.updated_at.name: datetime.now()
         }
         _update_row(session, Quiz, filters, values)
 
@@ -236,7 +238,8 @@ def _save_question_row(session: Session, question_data: Dict[str, Any],
     if question is None:
         # Add new question
         values = {
-            QuizQuestion.quiz_id: quiz_id,
+            QuizQuestion.quiz_id.name: quiz_id,
+            QuizQuestion.question_number.name: question_number,
             QuizQuestion.text.name: text
         }
         question = _insert_row(session, QuizQuestion, values)
@@ -273,6 +276,7 @@ def _save_option_rows(session: Session, option_data: Dict[str, Any],
     if option is None:
         # Add new option
         values = {
+            QuizOption.question_id.name: question_id,
             QuizOption.option_number.name: option_number,
             QuizOption.text.name: text
         }
