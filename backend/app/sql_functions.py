@@ -98,7 +98,7 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     return json_dict_list
 
 
-def save_quiz(question_data: Dict[str, Any]) -> None:
+def save_quiz(question_data: Dict[str, Any]) -> bool:
     """
     Update quiz details, questions, and options.
 
