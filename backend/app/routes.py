@@ -42,20 +42,6 @@ def get_quiz_options():
         return jsonify({'error': 'An error occurred'}), 500
 
 
-@app.route('/save-quiz', methods=['POST'])
-def save_quiz():
-    try:
-        data = request.get_json()
-        result = sql_functions.save_quiz(data)
-        if result:
-            message = 'Quiz saved successfully'
-        else:
-            message = 'Failed to save quiz'
-        return jsonify({'message': message})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
 # ------------------------------
 # Route methods
 # ------------------------------
@@ -70,3 +56,17 @@ def get_full_quiz(quiz_id: str) -> Response:
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
         return jsonify({'error': 'An error occurred'}), 500
+
+
+@app.route('/save-quiz', methods=['POST'])
+def save_quiz():
+    try:
+        data = request.get_json()
+        result = sql_functions.save_quiz(data)
+        if result:
+            message = 'Quiz saved successfully'
+        else:
+            message = 'Failed to save quiz'
+        return jsonify({'message': message})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
