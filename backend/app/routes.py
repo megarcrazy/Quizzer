@@ -69,4 +69,5 @@ def save_quiz():
             message = 'Failed to save quiz'
         return jsonify({'message': message})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logging.critical(f'Error: {str(e)}')
+        return jsonify({'error': 'An error occurred'}), 500
