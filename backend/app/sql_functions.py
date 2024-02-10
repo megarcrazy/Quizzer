@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator, List, Optional
 from contextlib import contextmanager
 import logging
 from flask_sqlalchemy.model import DefaultMeta
+from sqlalchemy import and_
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 from app import db, Quiz, QuizQuestion, QuizOption
@@ -98,6 +99,11 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     return json_dict_list
 
 
+# ------------------------------
+# Helper methods
+# ------------------------------
+
+
 def save_quiz(question_data: Dict[str, Any]) -> bool:
     """
     Update quiz details, questions, and options.
@@ -148,15 +154,25 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
                 # Save quiz option details
                 _save_option_rows(session, option_data, question_id)
 
+            # Get highest option number and delete all the options with higher
+            # option numbers
+            threshold = _get_max_quiz_number_threshold(option_data_list,
+                                                       'option_number')
+            _delete_rest_of_rows(session, QuizOption, 'question_id',
+                                 question_id, 'option_number', threshold)
+
+        # Get highest question number and delete all the questions with higher
+        # question numbers
+        threshold = _get_max_quiz_number_threshold(question_data_list,
+                                                   'question_number')
+        _delete_rest_of_rows(session, QuizQuestion, 'quiz_id', quiz_id,
+                             'question_number', threshold)
+
         # Flag commits were successful
         successfully_commited = True
 
     return successfully_commited
 
-
-# ------------------------------
-# Helper methods
-# ------------------------------
 
 def _sql_row_to_dict_list(query_result: List[Row]) -> List[Dict[str, Any]]:
     """Convert SQL query list of row result to json dictionary list."""
@@ -194,7 +210,7 @@ def _insert_row(session: Session, table: DefaultMeta, values: Dict[str, Any]
 def _update_row(session: Session, table: DefaultMeta, filters: Dict[str, Any],
                 values: Dict[str, Any]) -> None:
     """Update row in SQL with filters and new values."""
-    session.query(table).filter(**filters).values(values)
+    session.query(table).filter_by(**filters).update(values)
 
 
 def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
@@ -216,7 +232,8 @@ def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
 
     # Commit and get quiz ID
     session.commit()
-    quiz_id = quiz.quiz_id
+    if quiz_id == 0:
+        quiz_id = quiz.quiz_id
     return quiz_id
 
 
@@ -294,3 +311,29 @@ def _save_option_rows(session: Session, option_data: Dict[str, Any],
     session.commit()
     question_id = option.question_id
     return question_id
+
+
+def _get_max_quiz_number_threshold(data_list: Dict[str, Any], index_key: str
+                                   ) -> int:
+    """Get highest index number of given data list."""
+    threshold = 0
+    if data_list != []:
+        threshold = data_list[-1][index_key]
+
+    return threshold
+
+
+def _delete_rest_of_rows(session: Session, table: DefaultMeta,
+                         foreign_key_name: str, foreign_key_value: int,
+                         index_column_name: str, threshold: int) -> None:
+    """Delete rows with custom index number above an integer threshold."""
+
+    condition = and_(
+        getattr(table, foreign_key_name) == foreign_key_value,
+        getattr(table, index_column_name) > threshold
+    )
+    # Filter by condition and delete
+    session.query(table).filter(condition).delete()
+
+    # Commit session
+    session.commit()

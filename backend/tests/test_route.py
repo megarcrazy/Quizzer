@@ -1,8 +1,10 @@
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 import unittest
 from unittest.mock import patch
 from flask_sqlalchemy.model import DefaultMeta
-from app import create_app, db, Quiz, QuizOption, QuizQuestion
+import sys
+sys.path.append(r'C:\Users\Vincent Tang\Desktop\Code\Quizzer\backend')
+from app import create_app, db, Quiz, QuizOption, QuizQuestion  # Noqa: E402
 
 
 class RouteSetup(unittest.TestCase):
@@ -111,6 +113,28 @@ class TestSaveQuiz(RouteSetup):
         super().__init__(methodName)
         self._route = '/save-quiz'
 
+    def _extract_full_quiz_by_id(self, quiz_id) -> Tuple[List, List, List]:
+        """Extraction quiz, quiz question and quiz option lists a given
+        quiz id.
+        """
+        with self._app.app_context():
+            quiz_list = Quiz.query.all()
+            quiz_question_list = (
+                db.session.query(QuizQuestion)
+                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
+                .filter(Quiz.quiz_id == quiz_id)
+                .all()
+            )
+            quiz_option_list = (
+                db.session.query(QuizOption)
+                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
+                .join(QuizQuestion,
+                      QuizOption.question_id == QuizQuestion.question_id)
+                .filter(Quiz.quiz_id == quiz_id)
+                .all()
+            )
+        return quiz_list, quiz_question_list, quiz_option_list
+
     def test_empty_response(self) -> None:
         """Test server response if there is no error."""
         # Arrange
@@ -158,10 +182,8 @@ class TestSaveQuiz(RouteSetup):
 
         # Assert
         # Extract rows from SQL database
-        with self._app.app_context():
-            quiz_list = Quiz.query.all()
-            quiz_question_list = QuizQuestion.query.all()
-            quiz_option_list = QuizOption.query.all()
+        quiz_list, quiz_question_list, quiz_option_list = \
+            self._extract_full_quiz_by_id(1)
 
         self.assertEqual(len(quiz_list), 1)
         self.assertEqual(len(quiz_question_list), 1)
@@ -169,12 +191,245 @@ class TestSaveQuiz(RouteSetup):
 
     def test_update_quiz(self) -> None:
         """Test updating a quiz without change the size."""
+        # Arrange
+        data = {
+            'quiz_data': {
+                'quiz_id': 0,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
 
-    def test_modify_quiz_same_size(self) -> None:
-        """Test saving a quiz after adding more questions."""
+        data_updated = {
+            'quiz_data': {
+                'quiz_id': 1,
+                'name': 'Test quiz 2',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question 2',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option 2'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        # Act
+        self._client.post(self._route, json=data)
+        self._client.post(self._route, json=data_updated)
+
+        # Assert
+        # Extract rows from SQL database
+        quiz_list, quiz_question_list, quiz_option_list = \
+            self._extract_full_quiz_by_id(1)
+
+        self.assertEqual(len(quiz_list), 1)
+        self.assertEqual(len(quiz_question_list), 1)
+        self.assertEqual(len(quiz_option_list), 1)
+        self.assertEqual(quiz_list[0].name, 'Test quiz 2')
+        self.assertEqual(quiz_question_list[0].text, 'Test question 2')
+        self.assertEqual(quiz_option_list[0].text, 'Test option 2')
+
+    def test_modify_quiz_increased_size(self) -> None:
+        """Test saving a quiz after adding questions and options."""
+        # Arrange
+        data = {
+            'quiz_data': {
+                'quiz_id': 0,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        data_updated = {
+            'quiz_data': {
+                'quiz_id': 1,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option'
+                            }
+                        ]
+                    },
+                    {
+                        'question_number': 2,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        # Act
+        self._client.post(self._route, json=data)
+        self._client.post(self._route, json=data_updated)
+
+        # Assert
+        # Extract rows from SQL database
+        quiz_list, quiz_question_list, quiz_option_list = \
+            self._extract_full_quiz_by_id(1)
+
+        self.assertEqual(len(quiz_list), 1)
+        self.assertEqual(len(quiz_question_list), 2)
+        self.assertEqual(len(quiz_option_list), 2)
+
+    def test_modify_quiz_decreased_size_to_empty(self) -> None:
+        """Test saving a quiz after removing all questions and options."""
+        # Arrange
+        data = {
+            'quiz_data': {
+                'quiz_id': 0,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        data_updated = {
+            'quiz_data': {
+                'quiz_id': 1,
+                'name': 'Test quiz',
+                'quiz_question_data': []
+            }
+        }
+
+        # Act
+        self._client.post(self._route, json=data)
+        self._client.post(self._route, json=data_updated)
+
+        # Assert
+        # Extract rows from SQL database
+        quiz_list, quiz_question_list, quiz_option_list = \
+            self._extract_full_quiz_by_id(1)
+
+        self.assertEqual(len(quiz_list), 1)
+        self.assertEqual(len(quiz_question_list), 0)
+        self.assertEqual(len(quiz_option_list), 0)
 
     def test_modify_quiz_decreased_size(self) -> None:
-        """Test saving a quiz after decreasing the amound of questions."""
+        """Test saving a quiz after removing questions and options."""
+        # Arrange
+        data = {
+            'quiz_data': {
+                'quiz_id': 0,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option A1'
+                            },
+                            {
+                                'option_number': 2,
+                                'question_number': 1,
+                                'text': 'Test option A2'
+                            }
+                        ]
+                    },
+                    {
+                        'question_number': 2,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option B1'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        data_updated = {
+            'quiz_data': {
+                'quiz_id': 1,
+                'name': 'Test quiz',
+                'quiz_question_data': [
+                    {
+                        'question_number': 1,
+                        'text': 'Test question',
+                        'quiz_option_data': [
+                            {
+                                'option_number': 1,
+                                'question_number': 1,
+                                'text': 'Test option A1'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        # Act
+        self._client.post(self._route, json=data)
+        self._client.post(self._route, json=data_updated)
+
+        # Assert
+        # Extract rows from SQL database
+        quiz_list, quiz_question_list, quiz_option_list = \
+            self._extract_full_quiz_by_id(1)
+
+        self.assertEqual(len(quiz_list), 1)
+        self.assertEqual(len(quiz_question_list), 1)
+        self.assertEqual(len(quiz_option_list), 1)
 
     @patch('app.sql_functions.save_quiz')
     def test_save_quiz_error_response(self, mock_requests) -> None:
