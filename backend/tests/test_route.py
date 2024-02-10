@@ -2,8 +2,9 @@ from typing import Any, Dict, List, Tuple
 import unittest
 from unittest.mock import patch
 from flask_sqlalchemy.model import DefaultMeta
+import os
 import sys
-sys.path.append(r'C:\Users\Vincent Tang\Desktop\Code\Quizzer\backend')
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from app import create_app, db, Quiz, QuizOption, QuizQuestion  # Noqa: E402
 
 

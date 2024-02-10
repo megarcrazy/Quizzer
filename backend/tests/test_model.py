@@ -1,7 +1,10 @@
 from datetime import datetime
 import unittest
 from freezegun import freeze_time
-from app import create_app, db, Quiz, QuizOption, QuizQuestion
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from app import create_app, db, Quiz, QuizOption, QuizQuestion  # Noqa: E402
 
 
 class TestORM(unittest.TestCase):
