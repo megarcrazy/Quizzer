@@ -111,11 +111,6 @@ def delete_quiz(quiz_id: str) -> bool:
     return True
 
 
-# ------------------------------
-# Helper methods
-# ------------------------------
-
-
 def save_quiz(question_data: Dict[str, Any]) -> bool:
     """
     Update quiz details, questions, and options.
@@ -184,6 +179,10 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
         successfully_commited = True
 
     return successfully_commited
+
+# ------------------------------
+# Helper methods
+# ------------------------------
 
 
 def _sql_row_to_dict_list(query_result: List[Row]) -> List[Dict[str, Any]]:
