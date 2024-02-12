@@ -71,3 +71,21 @@ def save_quiz():
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
         return jsonify({'error': 'An error occurred'}), 500
+
+
+@app.route('/delete-quiz/<quiz_id>', methods=['POST'])
+def delete_quiz(quiz_id: str) -> Response:
+    try:
+        quiz_id = int(quiz_id)
+        result = sql_functions.delete_quiz(quiz_id)
+        if result:
+            message = 'Quizz(es) deleted successfully'
+        else:
+            message = 'Failed to delete'
+        return jsonify({'message': message})
+    except ValueError as e:
+        logging.critical(f'Error: {str(e)}')
+        return jsonify({'error': 'quiz_id must be an integer'}), 500
+    except Exception as e:
+        logging.critical(f'Error: {str(e)}')
+        return jsonify({'error': 'An error occurred'}), 500

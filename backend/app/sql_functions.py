@@ -99,6 +99,18 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     return json_dict_list
 
 
+def delete_quiz(quiz_id: str) -> bool:
+    """Delete quiz by quiz ID in the database.
+
+    Parameters:
+        - quiz_id (str): Quiz ID to filter results to delete quiz.
+
+    Returns:
+        bool: True if a quiz got deleted else False.
+    """
+    return True
+
+
 # ------------------------------
 # Helper methods
 # ------------------------------

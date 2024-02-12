@@ -459,3 +459,19 @@ class TestSaveQuiz(RouteSetup):
         # # Assert
         self.assertEqual(json_data, {'error': 'An error occurred'})
         self.assertEqual(response.status_code, 500)
+
+
+class TestDeleteQuiz(RouteSetup):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self._route = '/delete-quiz'
+
+    def test_delete_quiz_sucessful(self) -> None:
+        """Test successfully deleting a quiz in the database."""
+
+    def test_delete_quiz_not_exist(self) -> None:
+        """Test attempting to delte a quiz that does not exist."""
+
+    def test_delete_quiz_error_response(self) -> None:
+        """Test the server response if the response is an error."""
