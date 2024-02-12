@@ -10,7 +10,7 @@ app = Blueprint('app', __name__)
 
 
 @app.route('/debug-quiz', methods=['GET'])
-def get_quizzes():
+def get_quizzes() -> Response:
     """Get all quiz data."""
     try:
         response = sql_functions.fetch_table_data(Quiz)
@@ -21,7 +21,7 @@ def get_quizzes():
 
 
 @app.route('/debug-quiz-question', methods=['GET'])
-def get_quiz_questions():
+def get_quiz_questions() -> Response:
     """Get all quiz question data."""
     try:
         response = sql_functions.fetch_table_data(QuizQuestion)
@@ -32,7 +32,7 @@ def get_quiz_questions():
 
 
 @app.route('/debug-quiz-option', methods=['GET'])
-def get_quiz_options():
+def get_quiz_options() -> Response:
     """Get all quiz option data."""
     try:
         response = sql_functions.fetch_table_data(QuizOption)
@@ -59,7 +59,7 @@ def get_full_quiz(quiz_id: str) -> Response:
 
 
 @app.route('/save-quiz', methods=['POST'])
-def save_quiz():
+def save_quiz() -> Response:
     try:
         data = request.get_json()
         result = sql_functions.save_quiz(data)
