@@ -79,7 +79,7 @@ def delete_quiz() -> Response:
         data = request.get_json()
         result = sql_functions.delete_quiz(data)
         if result:
-            message = 'Quizz deleted successfully'
+            message = 'Quiz deleted successfully'
         else:
             message = 'Failed to delete quiz'
         return jsonify({'message': message})
