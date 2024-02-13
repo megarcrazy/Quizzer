@@ -161,6 +161,10 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
         # Save quiz details
         quiz_id = _save_quiz_row(session, quiz_data)
 
+        if quiz_id == 0:
+            # Return early if no quiz was updated
+            return False
+
         # Extract question data
         question_data_list = quiz_data['quiz_question_data']
 
@@ -233,9 +237,13 @@ def _insert_row(session: Session, table: DefaultMeta, values: Dict[str, Any]
 
 
 def _update_row(session: Session, table: DefaultMeta, filters: Dict[str, Any],
-                values: Dict[str, Any]) -> None:
+                values: Dict[str, Any]) -> bool:
     """Update row in SQL with filters and new values."""
-    session.query(table).filter_by(**filters).update(values)
+    updated_rows = session.query(table).filter_by(**filters).update(values)
+    # Return False if no rows updated
+    if updated_rows == 0:
+        return False
+    return True
 
 
 def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
@@ -253,7 +261,10 @@ def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
             Quiz.name.name: quiz_name,
             Quiz.updated_at.name: datetime.now()
         }
-        _update_row(session, Quiz, filters, values)
+        updated = _update_row(session, Quiz, filters, values)
+        if updated == 0:
+            # Return 0 if no quiz was updated
+            return 0
 
     # Commit and get quiz ID
     session.commit()
