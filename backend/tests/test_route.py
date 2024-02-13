@@ -28,6 +28,49 @@ class RouteSetup(unittest.TestCase):
             db.session.commit()
         return new_row
 
+    def _extract_full_quiz_by_id(
+        self, quiz_id: int
+    ) -> Tuple[List[Quiz], List[QuizQuestion], List[QuizOption]]:
+        """Extraction quiz, quiz question and quiz option lists a given
+        quiz id.
+        """
+        quiz_list = self._extract_quiz_by_id(quiz_id)
+        quiz_question_list = self._extract_question_by_quiz_id(quiz_id)
+        quiz_option_list = self._extract_option_by_quiz_id(quiz_id)
+        return quiz_list, quiz_question_list, quiz_option_list
+
+    def _extract_quiz_by_id(self, quiz_id: int) -> List[Quiz]:
+        """Extract all quiz rows by id."""
+        with self._app.app_context():
+            quiz_list = Quiz.query.filter(Quiz.quiz_id == quiz_id).all()
+        return quiz_list
+
+    def _extract_question_by_quiz_id(self, quiz_id: int) -> List[QuizQuestion]:
+        """Extract inner join of quiz and questions filtered by quiz id."""
+        with self._app.app_context():
+            quiz_question_list = (
+                db.session.query(QuizQuestion)
+                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
+                .filter(Quiz.quiz_id == quiz_id)
+                .all()
+            )
+        return quiz_question_list
+
+    def _extract_option_by_quiz_id(self, quiz_id: int) -> List[QuizQuestion]:
+        """Extract inner join of quiz, questions and options filtered by quiz
+        id.
+        """
+        with self._app.app_context():
+            quiz_option_list = (
+                db.session.query(QuizOption)
+                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
+                .join(QuizQuestion,
+                      QuizOption.question_id == QuizQuestion.question_id)
+                .filter(Quiz.quiz_id == quiz_id)
+                .all()
+            )
+        return quiz_option_list
+
 
 class TestGetFullQuiz(RouteSetup):
     """Test get_full_quiz."""
@@ -113,28 +156,6 @@ class TestSaveQuiz(RouteSetup):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self._route = '/save-quiz'
-
-    def _extract_full_quiz_by_id(self, quiz_id) -> Tuple[List, List, List]:
-        """Extraction quiz, quiz question and quiz option lists a given
-        quiz id.
-        """
-        with self._app.app_context():
-            quiz_list = Quiz.query.all()
-            quiz_question_list = (
-                db.session.query(QuizQuestion)
-                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
-                .filter(Quiz.quiz_id == quiz_id)
-                .all()
-            )
-            quiz_option_list = (
-                db.session.query(QuizOption)
-                .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
-                .join(QuizQuestion,
-                      QuizOption.question_id == QuizQuestion.question_id)
-                .filter(Quiz.quiz_id == quiz_id)
-                .all()
-            )
-        return quiz_list, quiz_question_list, quiz_option_list
 
     def test_empty_response(self) -> None:
         """Test server response if there is no error."""
@@ -469,9 +490,48 @@ class TestDeleteQuiz(RouteSetup):
 
     def test_delete_quiz_sucessful(self) -> None:
         """Test successfully deleting a quiz in the database."""
+        # Arrange
+        post_data = {'quiz_id': 1}
+        quiz_data = {'name': 'Test Quiz'}
+        self._insert_sample_data(Quiz, quiz_data)  # Create a quiz
+
+        # Act
+
+        response = self._client.post(self._route, json=post_data)
+        json_data = response.get_json()
+        quiz_list = self._extract_quiz_by_id(1)
+
+        # Assert
+        self.assertEqual(len(quiz_list), 0)
+        self.assertEqual(json_data, {'message': 'Quizz deleted successfully'})
+        self.assertEqual(response.status_code, 200)
 
     def test_delete_quiz_not_exist(self) -> None:
-        """Test attempting to delte a quiz that does not exist."""
+        """Test attempting to delete a quiz that does not exist."""
+        # Arrange
+        post_data = {'quiz_id': 1}
 
-    def test_delete_quiz_error_response(self) -> None:
+        # Act
+        response = self._client.post(self._route, json=post_data)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(json_data, {'message': 'Failed to delete quiz'})
+        self.assertEqual(response.status_code, 200)
+
+    @patch('app.sql_functions.delete_quiz')
+    def test_delete_quiz_error_response(self, mock_requests) -> None:
         """Test the server response if the response is an error."""
+        # Arrange
+        data = {}
+        mock_requests.side_effect = Exception(
+            'test_delete_quiz_error_response')
+
+        # Act
+        response = self._client.post(self._route, json=data)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(json_data, {'error': 'An error occurred'})
+        self.assertEqual(response.status_code, 500)
+        mock_requests.assert_called_once_with({})

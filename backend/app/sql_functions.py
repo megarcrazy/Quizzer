@@ -99,15 +99,29 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
     return json_dict_list
 
 
-def delete_quiz(quiz_id: str) -> bool:
+def delete_quiz(delete_quiz_data: Dict[str, str]) -> bool:
     """Delete quiz by quiz ID in the database.
 
     Parameters:
-        - quiz_id (str): Quiz ID to filter results to delete quiz.
+
+    delete_quiz_data (Dict[str, str]): Dictionary contain the quiz id to
+        delete quiz.
 
     Returns:
         bool: True if a quiz got deleted else False.
     """
+    quiz_id = int(delete_quiz_data['quiz_id'])
+
+    with _get_session(True, True) as session:
+        # Filter by condition and delete
+        rows_deleted = session.query(Quiz).filter(quiz_id == quiz_id).delete()
+
+        # Commit session
+        session.commit()
+
+    # Return False if no rows deleted
+    if rows_deleted == 0:
+        return False
     return True
 
 
