@@ -198,6 +198,34 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
 
     return successfully_commited
 
+
+def get_quiz_list(limit: int) -> List[Dict[str, str]]:
+    """Extract a list of quiz with list size up to the limit.
+
+    Parameters:
+        limit (int): Quiz list size limit or 0 for all.
+
+    Returns:
+        List[Quiz]: List of quizzess from the database.
+    """
+    with _get_session(False, False) as session:
+        if limit == 0:
+            quiz_list = session.query(Quiz).all()
+        else:
+            quiz_list = session.query(Quiz).limit(limit).all()
+
+    # Convert quiz list to list of dictionaries
+    json_quiz_list = []
+    for quiz in quiz_list:
+        data = {
+            'quiz_id': quiz.quiz_id,
+            'name': quiz.name
+        }
+        json_quiz_list.append(data)
+
+    return json_quiz_list
+
+
 # ------------------------------
 # Helper methods
 # ------------------------------

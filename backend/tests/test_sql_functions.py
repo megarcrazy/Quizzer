@@ -464,3 +464,35 @@ class TestDeleteQuiz(RouteTestSetup):
 
         # Assert
         self.assertEqual(context.exception.__class__, KeyError)
+
+
+class TestGetQuizList(RouteTestSetup):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+
+    def test_get_quizzes_empty(self) -> None:
+        """Test get quiz list if no quiz exists."""
+        # Arrange
+        limit = 1
+
+        # Act
+        with self._app.app_context():
+            quiz_list = sql_functions.get_quiz_list(limit)
+
+        # Assert
+        self.assertEqual(quiz_list, [])
+
+    def test_get_quizzes_non_empty(self) -> None:
+        """Test get quiz list if quizzes exist."""
+        # Arrange
+        quiz_data = {'name': 'Test Quiz'}
+        self._insert_sample_data(Quiz, quiz_data)  # Create a quiz
+        limit = 1
+
+        # Act
+        with self._app.app_context():
+            quiz_list = sql_functions.get_quiz_list(limit)
+
+        # Assert
+        self.assertEqual(quiz_list, [{'name': 'Test Quiz', 'quiz_id': 1}])

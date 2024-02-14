@@ -465,3 +465,75 @@ class TestDeleteQuiz(RouteTestSetup):
         self.assertEqual(json_data, {'error': 'An error occurred'})
         self.assertEqual(response.status_code, 500)
         mock_request.assert_called_once_with({})
+
+
+class TestGetQuizzes(RouteTestSetup):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self._route = '/get-quiz'
+
+    def test_get_quizzes_empty(self) -> None:
+        """Test get quiz list if no quiz exists."""
+        # Arrange
+        route = f'{self._route}/1'
+
+        # Act
+        response = self._client.get(route)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(json_data, {'quiz_list': []})
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_quizzes_non_empty(self) -> None:
+        """Test get quiz list if quizzes exist."""
+        # Arrange
+        quiz_data = {'name': 'Test Quiz'}
+        self._insert_sample_data(Quiz, quiz_data)
+        route = f'{self._route}/1'
+
+        # Act
+        response = self._client.get(route)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertIn('quiz_list', json_data)
+        self.assertCountEqual(
+            json_data['quiz_list'], [{'name': 'Test Quiz', 'quiz_id': 1}])
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_quizzes_wrong_limit_data_type(self) -> None:
+        """Test get quiz list if input limit cannot be converted to an
+        integer.
+        """
+        # Arrange
+        route = f'{self._route}/test'
+
+        # Act
+        response = self._client.get(route)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(
+            json_data, {'message': 'limit needs to be an integer'})
+        self.assertEqual(response.status_code, 200)
+
+    @patch('app.sql_functions.get_quiz_list')
+    def test_get_quizzes_error_response(
+        self, mock_request: MagicMock
+    ) -> None:
+        """Test the server response if the response is an error."""
+        # Arrange
+        mock_request.side_effect = Exception(
+            'test_get_quizzes_error_response')
+        route = f'{self._route}/1'
+
+        # Act
+        response = self._client.get(route)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(json_data, {'error': 'An error occurred'})
+        self.assertEqual(response.status_code, 500)
+        mock_request.assert_called_once_with('1')

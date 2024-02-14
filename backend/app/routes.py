@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from flask import Blueprint, jsonify, Response, request
 from app import Quiz, QuizQuestion, QuizOption, sql_functions
 
@@ -10,7 +11,7 @@ app = Blueprint('app', __name__)
 
 
 @app.route('/debug-quiz', methods=['GET'])
-def get_quizzes() -> Response:
+def debug_get_quizzes() -> Response:
     """Get all quiz data."""
     try:
         response = sql_functions.fetch_table_data(Quiz)
@@ -21,7 +22,7 @@ def get_quizzes() -> Response:
 
 
 @app.route('/debug-quiz-question', methods=['GET'])
-def get_quiz_questions() -> Response:
+def debug_get_quiz_questions() -> Response:
     """Get all quiz question data."""
     try:
         response = sql_functions.fetch_table_data(QuizQuestion)
@@ -32,7 +33,7 @@ def get_quiz_questions() -> Response:
 
 
 @app.route('/debug-quiz-option', methods=['GET'])
-def get_quiz_options() -> Response:
+def debug_get_quiz_options() -> Response:
     """Get all quiz option data."""
     try:
         response = sql_functions.fetch_table_data(QuizOption)
@@ -83,6 +84,24 @@ def delete_quiz() -> Response:
         else:
             message = 'Failed to delete quiz'
         return jsonify({'message': message})
+    except Exception as e:
+        logging.critical(f'Error: {str(e)}')
+        return jsonify({'error': 'An error occurred'}), 500
+
+
+@app.route('/get-quiz/<limit>', methods=['GET'])
+@app.route('/get-quiz', methods=['GET'])
+def get_quizzes(limit: Optional[str] = '0') -> Response:
+    """Get a list of quizzes from the database with amount up to the limit or
+    0 for all.
+    """
+    try:
+        try:
+            int(limit)
+        except ValueError:
+            return jsonify({'message': 'limit needs to be an integer'})
+        quiz_list = sql_functions.get_quiz_list(limit)
+        return jsonify({'quiz_list': quiz_list})
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
         return jsonify({'error': 'An error occurred'}), 500
