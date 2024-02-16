@@ -85,7 +85,8 @@ def select_full_quiz(quiz_id: str) -> List[Dict[str, Any]]:
                 QuizQuestion.text.label('question_text'),
                 QuizOption.option_id,
                 QuizOption.option_number,
-                QuizOption.text.label('option_text')
+                QuizOption.text.label('option_text'),
+                QuizOption.correct_answer
             )
             .join(QuizQuestion, QuizQuestion.quiz_id == Quiz.quiz_id)
             .join(QuizOption,
@@ -144,7 +145,8 @@ def save_quiz(question_data: Dict[str, Any]) -> bool:
                             'quiz_option_data': [
                                 {
                                     'option_number': int,
-                                    'text': str
+                                    'text': str,
+                                    'correct_answer': bool
                                 }
                             ]
                         }...
@@ -345,6 +347,7 @@ def _save_option_rows(session: Session, option_data: Dict[str, Any],
     # Extract data from dictionary
     option_number = option_data['question_number']
     text = option_data['text']
+    correct_answer = option_data['correct_answer']
 
     # Check if question number index already has a question
     filters = {
@@ -359,14 +362,16 @@ def _save_option_rows(session: Session, option_data: Dict[str, Any],
         values = {
             QuizOption.question_id.name: question_id,
             QuizOption.option_number.name: option_number,
-            QuizOption.text.name: text
+            QuizOption.text.name: text,
+            QuizOption.correct_answer.name: correct_answer
         }
         option = _insert_row(session, QuizOption, values)
     else:
         # Update quiz question for given quiz ID
         filters = {
             QuizOption.question_id.name: question_id,
-            QuizOption.option_number.name: option_number
+            QuizOption.option_number.name: option_number,
+            QuizOption.correct_answer.name: correct_answer
         }
         values = {QuizOption.text.name: text}
         _update_row(session, QuizOption, filters, values)

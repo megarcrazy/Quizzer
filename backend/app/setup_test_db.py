@@ -40,15 +40,22 @@ def _insert_sample_questions(db: SQLAlchemy) -> None:
 def _insert_sample_options(db: SQLAlchemy) -> None:
     """Insert sample questions for testing."""
     data_list = [
-        {'question_id': '1', 'text': 'Window', 'option_number': 1},
-        {'question_id': '1', 'text': '2', 'option_number': 2},
-        {'question_id': '2', 'text': '2x', 'option_number': 1},
-        {'question_id': '2', 'text': 'x^3/3', 'option_number': 2},
-        {'question_id': '3', 'text': 'What?', 'option_number': 1},
-        {'question_id': '3', 'text': 'Watt', 'option_number': 2},
+        {'question_id': '1', 'text': 'Window', 'option_number': 1,
+         'correct_answer': False},
+        {'question_id': '1', 'text': '2', 'option_number': 2,
+         'correct_answer': True},
+        {'question_id': '2', 'text': '2x', 'option_number': 1,
+         'correct_answer': True},
+        {'question_id': '2', 'text': 'x^3/3', 'option_number': 2,
+         'correct_answer': False},
+        {'question_id': '3', 'text': 'What?', 'option_number': 1,
+         'correct_answer': False},
+        {'question_id': '3', 'text': 'Watt', 'option_number': 2,
+         'correct_answer': True},
         {'question_id': '4', 'text': 'To get to the other side',
-         'option_number': 1},
-        {'question_id': '4', 'text': 'No', 'option_number': 2},
+         'option_number': 1, 'correct_answer': True},
+        {'question_id': '4', 'text': 'No', 'option_number': 2,
+         'correct_answer': False},
     ]
     for data in data_list:
         row = QuizOption(**data)

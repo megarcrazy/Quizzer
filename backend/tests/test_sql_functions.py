@@ -33,7 +33,8 @@ class TestGetFullQuiz(RouteTestSetup):
                          'quiz_id': 1}
         self._insert_sample_data(QuizQuestion, question_data)
 
-        option_data = {'text': 'Blue', 'option_number': 1, 'question_id': 1}
+        option_data = {'text': 'Blue', 'option_number': 1, 'question_id': 1,
+                       'correct_answer': True}
         self._insert_sample_data(QuizOption, option_data)
 
         quiz_id = 1
@@ -47,11 +48,12 @@ class TestGetFullQuiz(RouteTestSetup):
         self.assertCountEqual(
             result[0].keys(),
             [
-                'created_at', 'name', 'option_id', 'option_number',
-                'option_text', 'question_id', 'question_number',
-                'question_text', 'quiz_id', 'updated_at'
+                'created_at', 'correct_answer', 'name', 'option_id',
+                'option_number', 'option_text', 'question_id',
+                'question_number', 'question_text', 'quiz_id', 'updated_at'
             ]
         )
+        self.assertEqual(result[0]['correct_answer'], True)
         self.assertEqual(result[0]['name'], 'Test Quiz')
         self.assertEqual(result[0]['option_id'], 1)
         self.assertEqual(result[0]['option_number'], 1)
@@ -100,7 +102,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -138,7 +141,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -158,7 +162,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option 2'
+                                'text': 'Test option 2',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -201,7 +206,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -221,7 +227,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     },
@@ -232,7 +239,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -272,7 +280,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option'
+                                'text': 'Test option',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -321,12 +330,14 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option A1'
+                                'text': 'Test option A1',
+                                'correct_answer': True
                             },
                             {
                                 'option_number': 2,
                                 'question_number': 1,
-                                'text': 'Test option A2'
+                                'text': 'Test option A2',
+                                'correct_answer': True
                             }
                         ]
                     },
@@ -337,7 +348,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option B1'
+                                'text': 'Test option B1',
+                                'correct_answer': True
                             }
                         ]
                     }
@@ -357,7 +369,8 @@ class TestSaveQuiz(RouteTestSetup):
                             {
                                 'option_number': 1,
                                 'question_number': 1,
-                                'text': 'Test option A1'
+                                'text': 'Test option A1',
+                                'correct_answer': True
                             }
                         ]
                     }

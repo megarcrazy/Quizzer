@@ -77,7 +77,8 @@ class TestORM(unittest.TestCase):
         quiz_option_data = {
             'question_id': 1,
             'option_number': 1,
-            'text': 'Watt'
+            'text': 'Watt',
+            'correct_answer': True
         }
 
         # Act
@@ -91,8 +92,10 @@ class TestORM(unittest.TestCase):
             question_id = new_row.question_id
             option_number = new_row.option_number
             text = new_row.text
+            correct_answer = new_row.correct_answer
 
         # Assert
         self.assertEqual(question_id, 1)
         self.assertEqual(option_number, 1)
         self.assertEqual(text, 'Watt')
+        self.assertEqual(correct_answer, True)

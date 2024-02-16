@@ -54,3 +54,6 @@ class QuizOption(db.Model):
 
     # Text represention of quiz option
     text = db.Column(db.String(20), nullable=False)
+
+    # Boolean to signify if the option is current to the question
+    correct_answer = db.Column(db.Boolean, nullable=False)
