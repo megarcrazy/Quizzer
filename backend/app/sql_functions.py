@@ -278,9 +278,9 @@ def _update_row(session: Session, table: DefaultMeta, filters: Dict[str, Any],
 
 def _save_quiz_row(session: Session, quiz_data: Dict[str, Any]) -> int:
     """Save quiz row and return quiz ID."""
-    quiz_id = quiz_data.get('quiz_id')
+    quiz_id = quiz_data.get('quiz_id', 0)
     quiz_name = quiz_data['name']
-    if quiz_id == 0 or quiz_id is None:
+    if quiz_id == 0:
         # If the given quiz ID is 0, create new quiz
         values = {Quiz.name.name: quiz_name}
         quiz = _insert_row(session, Quiz, values)
