@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -26,15 +27,15 @@ class TestGetFullQuiz(RouteTestSetup):
     def test_full_quiz_one_line(self) -> None:
         """Empty table with no data."""
         # Arrange
-        quiz_data = {'name': 'Test Quiz'}
+
+        # Insert existing data
+        quiz_data = self._get_default_quiz_data()
         self._insert_sample_data(Quiz, quiz_data)
 
-        question_data = {'text': 'Favourite colour?', 'question_number': 1,
-                         'quiz_id': 1}
+        question_data = self._get_default_question_data()
         self._insert_sample_data(QuizQuestion, question_data)
 
-        option_data = {'text': 'Blue', 'option_number': 1, 'question_id': 1,
-                       'correct_answer': True}
+        option_data = self._get_default_option_data()
         self._insert_sample_data(QuizOption, option_data)
 
         quiz_id = 1
@@ -45,23 +46,22 @@ class TestGetFullQuiz(RouteTestSetup):
 
         # Assert
         self.assertEqual(len(result), 1)
-        self.assertCountEqual(
-            result[0].keys(),
-            [
-                'created_at', 'correct_answer', 'name', 'option_id',
-                'option_number', 'option_text', 'question_id',
-                'question_number', 'question_text', 'quiz_id', 'updated_at'
-            ]
+        self.assertDictEqual(
+            result[0],
+            {
+                'created_at': datetime.utcfromtimestamp(0),
+                'correct_answer': True,
+                'name': 'Test Quiz',
+                'option_id': 1,
+                'option_number': 1,
+                'option_text': 'Test Option',
+                'question_id': 1,
+                'question_number': 1,
+                'question_text': 'Test Question',
+                'quiz_id': 1,
+                'updated_at': datetime.utcfromtimestamp(0)
+            }
         )
-        self.assertEqual(result[0]['correct_answer'], True)
-        self.assertEqual(result[0]['name'], 'Test Quiz')
-        self.assertEqual(result[0]['option_id'], 1)
-        self.assertEqual(result[0]['option_number'], 1)
-        self.assertEqual(result[0]['option_text'], 'Blue')
-        self.assertEqual(result[0]['question_id'], 1)
-        self.assertEqual(result[0]['question_number'], 1)
-        self.assertEqual(result[0]['question_text'], 'Favourite colour?')
-        self.assertEqual(result[0]['quiz_id'], 1)
 
 
 class TestSaveQuiz(RouteTestSetup):
@@ -69,47 +69,11 @@ class TestSaveQuiz(RouteTestSetup):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
 
-    def test_empty_response(self) -> None:
-        """Test server response if there is no error."""
-        # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'test',
-                'quiz_question_data': []
-            }
-        }
-
-        # Act
-        with self._app.app_context():
-            result = sql_functions.save_quiz(data)
-
-        # Assert
-        self.assertEqual(result, True)
-
     def test_add_new_quiz(self) -> None:
         """Test adding a new quiz with new data."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+        data = self._get_default_full_quiz_data()
+        data['quiz_data']['quiz_id'] = 0
 
         # Act
         with self._app.app_context():
@@ -129,52 +93,28 @@ class TestSaveQuiz(RouteTestSetup):
     def test_update_quiz(self) -> None:
         """Test updating a quiz without change the size."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
 
-        data_updated = {
-            'quiz_data': {
-                'quiz_id': 1,
-                'name': 'Test quiz 2',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question 2',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option 2',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+        # Insert existing data
+        quiz_data = self._get_default_quiz_data()
+        self._insert_sample_data(Quiz, quiz_data)
+
+        question_data = self._get_default_question_data()
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        option_data = self._get_default_option_data()
+        self._insert_sample_data(QuizOption, option_data)
+
+        # Set up updated data
+        data_updated = self._get_default_full_quiz_data()
+        data_updated['quiz_data']['name'] = 'Test Quiz 2'
+        data_updated['quiz_data']['quiz_question_data'][0][
+            'text'] = 'Test Question 2'
+        data_updated['quiz_data']['quiz_question_data'][0][
+            'quiz_option_data'][0]['text'] = 'Test Option 2'
 
         # Act
         with self._app.app_context():
             # Insert quiz to save to override
-            sql_functions.save_quiz(data)
             result = sql_functions.save_quiz(data_updated)
 
         # Assert
@@ -187,71 +127,36 @@ class TestSaveQuiz(RouteTestSetup):
         self.assertEqual(len(quiz_list), 1)
         self.assertEqual(len(quiz_question_list), 1)
         self.assertEqual(len(quiz_option_list), 1)
-        self.assertEqual(quiz_list[0].name, 'Test quiz 2')
-        self.assertEqual(quiz_question_list[0].text, 'Test question 2')
-        self.assertEqual(quiz_option_list[0].text, 'Test option 2')
+        self.assertEqual(quiz_list[0].name, 'Test Quiz 2')
+        self.assertEqual(quiz_question_list[0].text, 'Test Question 2')
+        self.assertEqual(quiz_option_list[0].text, 'Test Option 2')
 
     def test_modify_quiz_increased_size(self) -> None:
         """Test saving a quiz after adding questions and options."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
 
-        data_updated = {
-            'quiz_data': {
-                'quiz_id': 1,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    },
-                    {
-                        'question_number': 2,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+        # Insert existing data
+        quiz_data = self._get_default_quiz_data()
+        self._insert_sample_data(Quiz, quiz_data)
+
+        question_data = self._get_default_question_data()
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        option_data = self._get_default_option_data()
+        self._insert_sample_data(QuizOption, option_data)
+
+        # Set up updated data
+        data_updated = self._get_default_full_quiz_data()
+        data_updated['quiz_data']['name'] = 'Test Quiz 2'
+        data_updated['quiz_data']['quiz_question_data'].append(
+            self._get_default_question_data({'question_number': 2})
+        )
+        data_updated['quiz_data']['quiz_question_data'][1][
+            'quiz_option_data'] = [self._get_default_option_data()]
 
         # Act
         with self._app.app_context():
             # Insert quiz to save to override
-            sql_functions.save_quiz(data)
             result = sql_functions.save_quiz(data_updated)
 
         # Assert
@@ -268,40 +173,24 @@ class TestSaveQuiz(RouteTestSetup):
     def test_modify_quiz_decreased_size_to_empty(self) -> None:
         """Test saving a quiz after removing all questions and options."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
 
-        data_updated = {
-            'quiz_data': {
-                'quiz_id': 1,
-                'name': 'Test quiz',
-                'quiz_question_data': []
-            }
-        }
+        # Insert existing data
+        quiz_data = self._get_default_quiz_data()
+        self._insert_sample_data(Quiz, quiz_data)
 
-        # Act
+        question_data = self._get_default_question_data()
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        option_data = self._get_default_option_data()
+        self._insert_sample_data(QuizOption, option_data)
+
+        # Set up updated data
+        data_updated = self._get_default_full_quiz_data()
+        data_updated['quiz_data']['quiz_question_data'] = []
+
         # Act
         with self._app.app_context():
             # Insert quiz to save to override
-            sql_functions.save_quiz(data)
             result = sql_functions.save_quiz(data_updated)
 
         # Assert
@@ -318,70 +207,42 @@ class TestSaveQuiz(RouteTestSetup):
     def test_modify_quiz_decreased_size(self) -> None:
         """Test saving a quiz after removing questions and options."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 0,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option A1',
-                                'correct_answer': True
-                            },
-                            {
-                                'option_number': 2,
-                                'question_number': 1,
-                                'text': 'Test option A2',
-                                'correct_answer': True
-                            }
-                        ]
-                    },
-                    {
-                        'question_number': 2,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option B1',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
 
-        data_updated = {
-            'quiz_data': {
-                'quiz_id': 1,
-                'name': 'Test quiz',
-                'quiz_question_data': [
-                    {
-                        'question_number': 1,
-                        'text': 'Test question',
-                        'quiz_option_data': [
-                            {
-                                'option_number': 1,
-                                'question_number': 1,
-                                'text': 'Test option A1',
-                                'correct_answer': True
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+        # Insert existing data
+        # Quiz 1
+        quiz_data = self._get_default_quiz_data()
+        self._insert_sample_data(Quiz, quiz_data)
+
+        # Question 1 belonging to Quiz 1
+        question_data = self._get_default_question_data()
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        # Question 2 belonging to Quiz 1
+        question_data_2 = self._get_default_question_data(
+            {'question_id': 2, 'question_number': 2})
+        self._insert_sample_data(QuizQuestion, question_data_2)
+
+        # Option 1 belonging to Question 1
+        option_data = self._get_default_option_data()
+        self._insert_sample_data(QuizOption, option_data)
+
+        # Option 2 belonging to Question 1
+        option_data_2 = self._get_default_option_data(
+            {'option_id': 2, 'option_number': 2})
+        self._insert_sample_data(QuizOption, option_data_2)
+
+        # Option 1 belonging to Question 2
+        option_data_3 = self._get_default_option_data(
+            {'question_id': 2, 'option_id': 3, 'option_number': 1})
+        self._insert_sample_data(QuizOption, option_data_3)
+
+        # Set up updated data
+        # Updated data contains new data for Question 1
+        # With new data having 1 Question and 1 Option
+        data_updated = self._get_default_full_quiz_data()
 
         # Act
         with self._app.app_context():
-            # Insert quiz to save to override
-            sql_functions.save_quiz(data)
             result = sql_functions.save_quiz(data_updated)
 
         # Assert
@@ -413,13 +274,8 @@ class TestSaveQuiz(RouteTestSetup):
     def test_quiz_not_found(self) -> None:
         """Test saving a quiz where the quiz id does not exist."""
         # Arrange
-        data = {
-            'quiz_data': {
-                'quiz_id': 2,
-                'name': 'Test quiz',
-                'quiz_question_data': []
-            }
-        }
+        data = self._get_default_full_quiz_data()
+        data['quiz_data']['quiz_id'] = 2  # Quiz with ID 2 does not exist
 
         # Act
         with self._app.app_context():
@@ -439,7 +295,7 @@ class TestDeleteQuiz(RouteTestSetup):
         """Test successfully deleting a quiz in the database."""
         # Arrange
         delete_quiz_data = {'quiz_id': 1}
-        quiz_data = {'name': 'Test Quiz'}
+        quiz_data = self._get_default_quiz_data()
         self._insert_sample_data(Quiz, quiz_data)  # Create a quiz
 
         # Act

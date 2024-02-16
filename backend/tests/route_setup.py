@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 import unittest
 import os
 import sys
@@ -69,3 +70,63 @@ class RouteTestSetup(unittest.TestCase):
                 .all()
             )
         return quiz_option_list
+
+    def _get_default_full_quiz_data(self) -> Dict[str, Any]:
+        """Generate a default dictionary with full quiz data."""
+        quiz_data = self._get_default_quiz_data()
+        question_data = self._get_default_question_data()
+        option_data = self._get_default_option_data()
+
+        # Link rows
+        quiz_data['quiz_question_data'] = [question_data]
+        question_data['quiz_option_data'] = [option_data]
+
+        # Generate sample full quiz data
+        data = {'quiz_data': quiz_data}
+        return data
+
+    def _get_default_quiz_data(
+        self, modifications: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate a default dictionary with quiz data."""
+        data = {
+            'quiz_id': 1,
+            'name': 'Test Quiz',
+            'created_at': datetime.utcfromtimestamp(0),
+            'updated_at': datetime.utcfromtimestamp(0)
+        }
+        if modifications is not None:
+            for key, item in modifications.items():
+                data[key] = item
+        return data
+
+    def _get_default_question_data(
+        self,  modifications: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate a default dictionary with question data."""
+        data = {
+            'question_id': 1,
+            'quiz_id': 1,
+            'question_number': 1,
+            'text': 'Test Question'
+        }
+        if modifications is not None:
+            for key, item in modifications.items():
+                data[key] = item
+        return data
+
+    def _get_default_option_data(
+        self,  modifications: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate a default dictionary with option data."""
+        data = {
+            'option_id': 1,
+            'question_id': 1,
+            'option_number': 1,
+            'text': 'Test Option',
+            'correct_answer': True
+        }
+        if modifications is not None:
+            for key, item in modifications.items():
+                data[key] = item
+        return data
