@@ -345,7 +345,7 @@ def _save_option_rows(session: Session, option_data: Dict[str, Any],
                       question_id: int) -> None:
     """Save option row."""
     # Extract data from dictionary
-    option_number = option_data['question_number']
+    option_number = option_data['option_number']
     text = option_data['text']
     correct_answer = option_data['correct_answer']
 
