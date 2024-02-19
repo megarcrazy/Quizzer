@@ -15,6 +15,7 @@ function App() {
       {/* The Routes component is used to define different routes */}
       <Routes>
         <Route path='/' element={<HomePage />} />
+        <Route path='/home' element={<HomePage />} />
         <Route path='/my-quizzes' element={<QuizMenuPage />} />
         <Route path='/play' element={<PlaySavedQuizPage />} />
         <Route path='/edit' element={<EditSavedQuizPage />} />
