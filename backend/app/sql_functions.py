@@ -228,6 +228,11 @@ def get_quiz_list(limit: int) -> List[Dict[str, str]]:
     return json_quiz_list
 
 
+def evaluate_quiz(quiz_id: int, selections: List[int]) -> List[bool]:
+    """Evaluate the user input quiz comparing the input answers with the
+    answers in the database.
+    """
+
 # ------------------------------
 # Helper methods
 # ------------------------------

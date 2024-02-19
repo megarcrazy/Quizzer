@@ -404,3 +404,45 @@ class TestGetQuizzes(RouteTestSetup):
         self.assertEqual(json_data, {'error': 'An error occurred'})
         self.assertEqual(response.status_code, 500)
         mock_request.assert_called_once_with('1')
+
+
+class TestEvaluateQuiz(RouteTestSetup):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self._route = '/evaluate_quiz'
+
+    def test_incorrect_json_input(self) -> None:
+        """Test response if the dictionary input is in the wrong format."""
+        # Arrange
+        data = {}
+
+        # Act
+        response = self._client.post(self._route, json=data)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(
+            json_data,
+            {'message': 'Data requires keys "quiz_id" and "selections"'}
+        )
+        self.assertEqual(response.status_code, 200)
+
+    @patch('app.sql_functions.evaluate_quiz')
+    def test_evaluate_quiz_error_response(
+        self, mock_request: MagicMock
+    ) -> None:
+        """Test the server response if the response is an error."""
+        # Arrange
+        mock_request.side_effect = Exception(
+            'test_evaluate_quiz_error_response')
+        data = {'quiz_id': 1, 'selections': []}
+
+        # Act
+        response = self._client.post(self._route, json=data)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertEqual(json_data, {'error': 'An error occurred'})
+        self.assertEqual(response.status_code, 500)
+        mock_request.assert_called_once_with(1, [])

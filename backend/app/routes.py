@@ -105,3 +105,22 @@ def get_quizzes(limit: Optional[str] = '0') -> Response:
     except Exception as e:
         logging.critical(f'Error: {str(e)}')
         return jsonify({'error': 'An error occurred'}), 500
+
+
+@app.route('/evaluate_quiz', methods=['POST'])
+def evaluate_quiz() -> Response:
+    """Get a list of boolean representing incorrect or correct selected
+    answers submitted by the user.
+    """
+    try:
+        data = request.get_json()
+        quiz_id = data.get('quiz_id')
+        selections = data.get('selections')
+        if quiz_id is None or selections is None:
+            message = 'Data requires keys "quiz_id" and "selections"'
+            return jsonify({'message': message})
+        result = sql_functions.evaluate_quiz(quiz_id, selections)
+        return jsonify({'result': result})
+    except Exception as e:
+        logging.critical(f'Error: {str(e)}')
+        return jsonify({'error': 'An error occurred'}), 500
