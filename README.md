@@ -17,16 +17,16 @@ To run the backend, follow these instructions:
     ```
 2. Set up a virtual environment (recommended).
     ```
-    python -m venv venv
+    python -m venv .venv
     ```
 3. Activate the virtual environment.
     - On Windows:
         ```
-        venv\Scripts\activate
+        .venv\Scripts\activate
         ```
     - On Unix or MacOS:
         ```
-        source venv/bin/activate
+        source .venv/bin/activate
         ```
 4. Install the required Python packages.
     ```
@@ -34,7 +34,7 @@ To run the backend, follow these instructions:
     ```
 5. Run the Flask application.
     ```
-    python app.py
+    python run.py
     ```
 
 The Flask backend runs at [http://localhost:5000].
