@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavigationBar from '../components/NavigationBar';
 import logo from '../logo.svg';
 
 const HomePage: React.FC = () => {
@@ -12,6 +13,7 @@ const HomePage: React.FC = () => {
 
     return (
         <div className="App">
+            <NavigationBar />
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
                 <p>
