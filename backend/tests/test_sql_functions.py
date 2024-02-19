@@ -365,3 +365,76 @@ class TestGetQuizList(RouteTestSetup):
 
         # Assert
         self.assertEqual(quiz_list, [{'name': 'Test Quiz', 'quiz_id': 1}])
+
+
+class TestEvaluateQuiz(RouteTestSetup):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+
+    def test_evaluate_quiz_not_found(self) -> None:
+        """Test evaluating a quiz if the quiz ID does not exist in the
+        database.
+        """
+        # Arrange
+        user_selection_list = [1, 2, 3, 4]
+
+        # Act
+        with self._app.app_context():
+            evaluation = sql_functions.evaluate_quiz(1, user_selection_list)
+
+        # Assert
+        self.assertEqual(evaluation, [])
+
+    def test_evaluate_quiz(self) -> None:
+        """Test evaluating a quiz if the quiz ID exists in the database.
+        """
+        # Arrange
+
+        # Insert quiz before mock inputting user selection
+        # Generate 2 questions with 2 options each
+
+        # Generate Quiz
+        quiz_data = self._get_default_quiz_data()
+        self._insert_sample_data(Quiz, quiz_data)
+
+        # Generate Questions
+        question_data = self._get_default_question_data(
+            {'question_number': 1})
+        del question_data['question_id']
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        question_data = self._get_default_question_data(
+            {'question_number': 2})
+        del question_data['question_id']
+        self._insert_sample_data(QuizQuestion, question_data)
+
+        # Generate Options
+        option_data = self._get_default_option_data(
+            {'option_number': 1, 'correct_answer': True})
+        del option_data['option_id']
+        self._insert_sample_data(QuizOption, option_data)
+
+        option_data = self._get_default_option_data(
+            {'option_number': 2, 'correct_answer': False})
+        del option_data['option_id']
+        self._insert_sample_data(QuizOption, option_data)
+
+        option_data = self._get_default_option_data(
+            {'option_number': 1, 'correct_answer': False})
+        del option_data['option_id']
+        self._insert_sample_data(QuizOption, option_data)
+
+        option_data = self._get_default_option_data(
+            {'option_number': 2, 'correct_answer': True})
+        del option_data['option_id']
+        self._insert_sample_data(QuizOption, option_data)
+
+        user_selection_list = [1, 1]
+
+        # Act
+        with self._app.app_context():
+            evaluation = sql_functions.evaluate_quiz(1, user_selection_list)
+
+        # Assert
+        self.assertEqual(evaluation, [True, False])

@@ -429,6 +429,21 @@ class TestEvaluateQuiz(RouteTestSetup):
         self.assertEqual(response.status_code, 200)
 
     @patch('app.sql_functions.evaluate_quiz')
+    def test_evaluate_quiz_success(self, mock_request: MagicMock) -> None:
+        """Test case where the server successfully evaluates quiz."""
+        # Arrange
+        mock_request.return_value = [True, False]
+        data = {'quiz_id': 1, 'selections': []}
+
+        # Act
+        response = self._client.post(self._route, json=data)
+        json_data = response.get_json()
+
+        # Assert
+        self.assertDictEqual(json_data, {'result': [True, False]})
+        self.assertEqual(response.status_code, 200)
+
+    @patch('app.sql_functions.evaluate_quiz')
     def test_evaluate_quiz_error_response(
         self, mock_request: MagicMock
     ) -> None:

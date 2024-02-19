@@ -228,10 +228,18 @@ def get_quiz_list(limit: int) -> List[Dict[str, str]]:
     return json_quiz_list
 
 
-def evaluate_quiz(quiz_id: int, selections: List[int]) -> List[bool]:
+def evaluate_quiz(quiz_id: int, user_selection_list: List[int]) -> List[bool]:
     """Evaluate the user input quiz comparing the input answers with the
     answers in the database.
     """
+    evaluation = []
+    answer_list = _get_quiz_answers(quiz_id)
+    for user_choice, answer in zip(user_selection_list, answer_list):
+        if user_choice == answer:
+            evaluation.append(True)
+        else:
+            evaluation.append(False)
+    return evaluation
 
 # ------------------------------
 # Helper methods
@@ -411,3 +419,23 @@ def _delete_rest_of_rows(session: Session, table: DefaultMeta,
 
     # Commit session
     session.commit()
+
+
+def _get_quiz_answers(quiz_id: int) -> List[int]:
+    """Get list of option numbers that are the correct answers of the quiz."""
+    answers = []  # Default return value if error occurs
+    with _get_session(False, False) as session:
+        query = (
+            session.query(QuizOption.option_number)
+            .join(QuizQuestion,
+                  QuizOption.question_id == QuizQuestion.question_id)
+            .join(Quiz, QuizQuestion.quiz_id == Quiz.quiz_id)
+            .filter(
+                Quiz.quiz_id == quiz_id,
+                QuizOption.correct_answer.is_(True)
+            )
+        )
+
+        answers = [result.option_number for result in query.all()]
+
+    return answers
