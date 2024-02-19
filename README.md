@@ -16,11 +16,9 @@ To run the backend, follow these instructions:
     cd backend
     ```
 2. Set up a virtual environment (recommended).
-
     ```
     python -m venv venv
     ```
-
 3. Activate the virtual environment.
     - On Windows:
         ```
@@ -39,7 +37,7 @@ To run the backend, follow these instructions:
     python app.py
     ```
 
-The Flask backend runs at [http://localhost:5000](http://localhost:5000).
+The Flask backend runs at [http://localhost:5000].
 
 ### Frontend (Typescript React)
 
@@ -58,7 +56,7 @@ To run the frontend, follow these instructions:
     npm start
     ```
 
-The React frontend runs at [http://localhost:3000](http://localhost:3000).
+The React frontend runs at [http://localhost:3000].
 
 ## Project Structure
 - `backend`: Contains the Python Flask backend code.
