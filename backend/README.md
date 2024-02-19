@@ -1,34 +1,31 @@
 # Quizzer Backend
-The Quizzer project uses a Python Flask backend.
 
-# How to run
-The current Python version used in this program is 3.10.9 (64-bit).
+The Quizzer project uses a Python Flask backend with an SQLite database.
 
-It is important to create a virtual environment when running a Python project. Create a virtual environment in a folder like ".venv" with:
-```
-python -m venv .venv
-```
-Activate the environment with:
-<br />
-Windows
-```
-.\venv\Scripts\activate
-```
-Unix or MacOS
-```
-source venv/bin/activate
-```
-Install the required packages with:
-```
-pip install -r requirements.txt
-```
-Run the application with:
-```
+## How to Run
+
+### Prerequisites
+- Python version: 3.10.9 (64-bit)
+
+### Setup
+1. Create a virtual environment (e.g., ".venv"):
+    ```bash
+    python -m venv .venv
+    ```
+2. Activate the virtual environment:
+    - On Windows:
+        ```bash
+        .venv\Scripts\activate
+        ```
+    - On Unix or MacOS:
+        ```bash
+        source .venv/bin/activate
+        ```
+3. Install required Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Run the Flask Application
+```bash
 python run.py
-```
-Run unit tests with:
-```
-python -m unittest discover -v -s ./tests -p "test_*.py"
-```
-# Linter
-Linter: Flake8 https://flake8.pycqa.org/en/latest/
