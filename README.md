@@ -1,5 +1,7 @@
 # Quizzer
 
+WIP
+
 The Quizzer project is a web application that combines a Python Flask backend with a Typescript React frontend.
 The main features of this website includes:
   - Storing and editing saved quizzes
